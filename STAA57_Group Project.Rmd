@@ -1,7 +1,7 @@
 ---
 title: "**\\Huge STAA57 Group Project**"
 subtitle: "**\\Large What are the dominant research areas in Ontario's automotive sector, and how do institutions specialize in different fields**"
-author: "Minh Tran - 1006804914"
+author: "Minh Tran - 1006804914, Swajeet Jadhav - 1009888276"
 university: "University of Toronto - Scarborough"
 date: "2025-03-15"
 output: pdf_document
