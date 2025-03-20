@@ -68,7 +68,7 @@ Some of the main categorical variables that can help categorizing the data inclu
 
 In addition, the data set also contains research fields as variable (e.g. Alternative Fuels, Autonomy and AI, Vehicle Design) to indicate whether or not a researcher work fall into that field of research
 
-# II. Data Overview Analysis
+# II. Data Overview Analysis (**Swaaa**)
 
 ## *Descriptive Statistic*
 
@@ -83,7 +83,7 @@ In addition, the data set also contains research fields as variable (e.g. Altern
 -   Pie chart: Proportion of of different research fields
 -   History, frequency of research tag
 
-# III. Statistical Analysis
+# III. Statistical Analysis (**rayaanxsyed**)
 
 We could pick an area we think that will be most trending (AI for example) and test to see if that is true
 
@@ -93,7 +93,7 @@ We could pick an area we think that will be most trending (AI for example) and t
 
 - Bootstrapping
 
-# IV. Predictive modeling (Regression)
+# IV. Predictive modeling (Regression) (**Minh**)
 
 Build a regression model to predict number of researcher in a field, institutions
 
