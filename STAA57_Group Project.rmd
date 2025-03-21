@@ -1,0 +1,153 @@
+---
+title: "**\\Huge STAA57 Group Project**"
+subtitle: "**\\Large What are the dominant research areas in Ontario's automotive sector, and how do institutions specialize in different fields**"
+author: "Minh Tran - 1006804914, Swajeet Jadhav - 1009888276"
+university: "University of Toronto - Scarborough"
+date: "2025-03-15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+# Insert all library required here
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(knitr)
+library(kableExtra) 
+library(ggplot2)
+```
+
+```{r, include = FALSE }
+# Read the main data set in as researchers and tags file as researcher_tags
+
+researchers = read.csv("ontarioautoresearchers.csv")
+researcher_tags = read_excel("ontarioautoresearcherstags.xls")
+```
+
+\pagebreak
+
+# I. Introduction
+
+## Research Goal
+
+With the growing popularity of electric vehicles (EVs) and the rapid advancements in artificial intelligence (AI), particularly in the development of autonomous vehicles like Tesla, it is crucial for automotive research facilities in Ontario to focus their efforts and resources on the right areas. This will ensure a significant contribution to the academia world while assisting the government in implementing effective policies and educational institutions better educate, prepare the next generation of labors. 
+
+This report aims to examine the automotive research areas prioritizing by Ontario's research facilities and identify specialized facilities in trending fields. It will also explore which areas are attracting the most researchers and which institutions are specializing in particular research domains.
+
+## Dataset description
+
+### Data source
+
+Our dataset was collected by researchers from teh Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018.
+
+**Table 1: Data set Variables**
+
+```{r, echo=FALSE, eval=TRUE}
+glimpse(researchers)
+```
+
+Based on a summary of the data set, the `Noise..Viration.and.Harshness` variable was corrupted during the process of uploading or collecting the data and therefore will not be used in our report
+
+```{r}
+# Remove variable with errors
+researchers = researchers %>% select(!Noise..Vibration.and.Harshness )
+```
+
+Some of the main categorical variables that can help categorizing the data include
+
+- **Researcher.Name**
+
+- **Institution**: Name of university or research center that the researcher works at
+
+- **Research.Areas**: Researcher general field of research
+
+- **Tag**: Researcher's specialized field of research
+
+In addition, the data set also contains research fields as variable (e.g. Alternative Fuels, Autonomy and AI, Vehicle Design) to indicate whether or not a researcher work fall into that field of research
+
+# II. Data Overview Analysis
+
+## *Descriptive Statistic*
+
+-   Table 2: Summary statistics of research areas (count, frequency)
+    -   Identify the most common research fields
+```{r}
+research_count = researchers %>% group_by(Tag.1) %>%
+  summarise(Count = n()) %>%
+  mutate(Frequency = Count / sum(Count)) %>%
+  arrange(desc(Count))
+top_research_field = research_count$Tag.1[1]
+kable(research_count, caption = "Summary statistics of research areas")
+```
+    
+-   Table 3: Top 5 institutions with the most researchers in the top research field
+    -   Identify the most dominant institution in a field
+```{r}
+top_institutions = researchers %>%
+  filter(Tag.1 == top_research_field) %>%
+  count(Institution, sort = TRUE)%>%
+  rename(Reseacher_count = n)%>% head(5)
+kable(top_institutions, caption = paste("Top 5 Institutions in", top_research_field))
+```
+    
+
+## *Graph & Visualizations*
+
+-   Bar chart: Research distribution across institution
+
+```{r}
+ ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Research Distribution Across Institutions",
+       x = "Institution", y = "Count")
+```
+
+-   Pie chart: Proportion of different research fields
+
+```{r}
+ggplot(research_count, aes(x = "", y = Count, fill = Tag.1)) +
+  geom_bar(stat = "identity", width = 1) +  geom_col(color = "black") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(title = "Proportion of 
+  Research Fields")
+```
+
+-   History, frequency of research tag
+
+```{r}
+ggplot(researchers, aes(x = Tag.1)) +
+  geom_bar(fill = "blue", color = "black") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Frequency of Research Tags", x = "Research Field", y = "Count")
+
+```
+
+
+# III. Statistical Analysis
+
+We could pick an area we think that will be most trending (AI for example) and test to see if that is true
+
+- Confidence interval for the average number of researcher 
+
+- Hypothesis Testing
+
+- Bootstrapping
+
+# IV. Predictive modeling (Regression)
+
+Build a regression model to predict number of researcher in a field, institutions
+
+Build a regression model to see if an institution is likely to have to a grant funding
+
+Using cross-validation to validate the 2 models built above
+
+# V. Summary
+
+# Appendix
