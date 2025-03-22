@@ -74,14 +74,51 @@ In addition, the data set also contains research fields as variable (e.g. Altern
 
 -   Table 2: Summary statistics of research areas (count, frequency)
     -   Identify the most common research fields
+```{r}
+research_count = researchers %>% group_by(Tag.1) %>%
+  summarise(Count = n()) %>%
+  mutate(Frequency = Count / sum(Count)) %>%
+  arrange(desc(Count))
+top_research_field = research_count$Tag.1[1]
+kable(research_count, caption = "Summary statistics of research areas")
+```
 -   Table 3: Top 5 institutions with the most researchers in the top research field
     -   Identify the most dominant institution in a field
-
+```{r}
+top_institutions = researchers %>%
+  filter(Tag.1 == top_research_field) %>%
+  count(Institution, sort = TRUE)%>%
+  rename(Reseacher_count = n)%>% head(5)
+kable(top_institutions, caption = paste("Top 5 Institutions in", top_research_field))
+```
 ## *Graph & Visualizations*
 
 -   Bar chart: Research distribution across institution
+```{r}
+ ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Research Distribution Across Institutions",
+       x = "Institution", y = "Count")
+```
 -   Pie chart: Proportion of of different research fields
+```{r}
+ggplot(research_count, aes(x = "", y = Count, fill = Tag.1)) +
+  geom_bar(stat = "identity", width = 1) +  geom_col(color = "black") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(title = "Proportion of 
+  Research Fields")
+```
 -   History, frequency of research tag
+```{r}
+ggplot(researchers, aes(x = Tag.1)) +
+  geom_bar(fill = "blue", color = "black") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Frequency of Research Tags", x = "Research Field", y = "count")
+
+```
 
 # III. Statistical Analysis (**rayaanxsyed**)
 
