@@ -7,9 +7,6 @@ date: "2025-03-15"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ```{r, include = FALSE}
 # Insert all library required here
@@ -44,7 +41,7 @@ This report aims to examine the automotive research areas prioritizing by Ontari
 
 Our data set was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018. A supporting description table of the research tag will be provided in the Appendix for better understanding of the main data set values. 
 
-**Table 1: Data set Variables**
+**Data set Variables**
 
 ```{r, echo=FALSE, eval=TRUE}
 glimpse(researchers)
@@ -73,9 +70,20 @@ In addition, the data set also contains research fields as variable (e.g. Altern
 
 ## *Descriptive Statistic*
 
--   Table 2: Summary statistics of research areas (count, frequency)
+-     Firstly lets try and change our data into some numeric values that can help us quantify and hence describe our data.
+
+```{r, echo=FALSE, eval=TRUE}
+research_summary = researchers %>%
+  pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to =
+                 "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "") %>%
+  count(Institution, Research_Area, sort = TRUE) %>%  
+  pivot_wider(names_from = Research_Area, values_from = n, values_fill = 0)  
+```
+
+-   Table 1: Summary statistics of research areas (count, frequency)
     -   Identify the most common research fields
-```{r}
+```{r, echo=FALSE, eval=TRUE}
 research_count = researchers %>% group_by(Tag.1) %>%
   summarise(Count = n()) %>%
   mutate(Frequency = Count / sum(Count)) %>%
@@ -84,19 +92,26 @@ top_research_field = research_count$Tag.1[1]
 kable(research_count, caption = "Summary statistics of research areas")
 ```
 
--   Table 3: Top 5 institutions with the most researchers in the top research field
+  The above table provides summary statistics of research areas, displaying the number of researchers working in each field ("Count") and their relative proportions ("Frequency").
+
+-   Table 2: Top 5 institutions with the most researchers in the top research field
     -   Identify the most dominant institution in a field
-```{r}
+```{r, echo=FALSE, eval=TRUE}
 top_institutions = researchers %>%
   filter(Tag.1 == top_research_field) %>%
   count(Institution, sort = TRUE)%>%
   rename(Reseacher_count = n)%>% head(5)
 kable(top_institutions, caption = paste("Top 5 Institutions in", top_research_field))
 ```
+
+  The table above will highlight the top five institutions with the most researchers working in Networks and Security. 
+
 ## *Graph & Visualizations*
+Graphs are a really important visual resprestation that helps us visaulize how the datset is distributed it allows us to analyse the variety of variables found in the data and how it relates to other variables across. 
 
 -   Bar chart: Research distribution across institution
-```{r}
+
+```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   coord_flip() +
@@ -104,33 +119,102 @@ kable(top_institutions, caption = paste("Top 5 Institutions in", top_research_fi
   labs(title = "Research Distribution Across Institutions",
        x = "Institution", y = "Count")
 ```
+
+-  The title "Research Distribution Across Institutions" clearly indicates the purpose of the graph.
+-  The x-axis (Institutions) and y-axis (Counts of Researchers) are labeled appropriately.
 -   Pie chart: Proportion of of different research fields
-```{r}
- ggplot(research_count, aes(x = "", y = Count, fill = Tag.1)) +
-  geom_bar(stat = "identity", width = 1) +  geom_col(color = "black") +
+
+```{r, echo=FALSE, eval=TRUE}
+# Filter and summarize research counts for selected fields
+research_distribution = research_summary %>%
+  summarise(Network_and_Security = sum(`Networks and security`, na.rm = TRUE),
+            Autonomy_and_AI = sum(`Autonomy and AI`, na.rm = TRUE),
+            Software = sum(Software, na.rm = TRUE),
+            Connected_Vehicles = sum(`Connected vehicles`, na.rm = TRUE),
+            Nanotechnology = sum(Nanotechnology, na.rm = TRUE)) %>%
+  pivot_longer(cols = everything(), names_to = "Research_Field", values_to =
+                 "Count")
+
+# Create a pie chart
+ggplot(research_distribution, aes(x = "", y = Count, fill = Research_Field)) +
+  geom_bar(stat = "identity", width = 1) +
   coord_polar("y", start = 0) +
   theme_void() +
-  labs(title = "Proportion of 
-  Research Fields")
+  labs(title = "Research Distribution in top Research Fields") +
+  scale_fill_brewer(palette = "Set2") 
 ```
+
+-  Each slice represents the proportion of researchers working in that field, based on data aggregated from multiple institutions.
+
 -   History, frequency of research tag
-```{r}
+
+```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers, aes(x = Tag.1)) +
   geom_bar(fill = "blue", color = "black") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(title = "Frequency of Research Tags", x = "Research Field", y = "count")
+  labs(title = "Frequency of Research Tag 1", x = "Research Field", y = "count")
 
 ```
+
+The graph is a bar chart showing the frequency distribution of different research fields based on the Tag.1 variable.
+-  The graph likely has bars of varying heights, showing which research fields are more popular.
 
 # III. Statistical Analysis (**rayaanxsyed**)
 
 We could pick an area we think that will be most trending (AI for example) and test to see if that is true
 
-- Confidence interval for the average number of researcher 
+- Confidence interval for the average number of researcher of all data set institutions
+```{r, echo=FALSE, eval=TRUE}
+institution_counts = researchers %>%
+  count(Institution) %>%
+  pull(n)  # Extract only the counts
 
-- Hypothesis Testing
+# Perform t-test to get confidence interval
+t_test_result = t.test(institution_counts, conf.level = 0.9)
+
+# Display confidence interval
+t_test_result$conf.int
+```
+
+
+-  Let's choose the most trending research topic (Network and security) and do a confidence interval for the average number of researchers in the field.
+```{r, echo=FALSE, eval=TRUE}
+network_security_count = research_summary$`Networks and security`
+# Perform t-test to get confidence interval
+t_test_result = t.test(network_security_count, conf.level = 0.95)
+# Display confidence interval
+t_test_result$conf.int
+
+```
+
+Hypothesis Testing
+For the topic (Network and security) and do a hypothesis test for the topic.
+```{r, echo=FALSE, eval=TRUE}
+network_security_count = research_summary$`Networks and security`
+# Perform hypothesis test (H0: mean = 5)
+t_test_result = t.test(network_security_count, mu = 5, alternative = "two.sided")
+
+# Display test result
+print(t_test_result)
+```
 
 - Bootstrapping
+- Bootstrapping is a re sampling technique used to estimate statistics on a dataset by repeatedly sampling with replacement. It helps assess the variability of an estimator (e.g., mean, standard deviation) and construct confidence intervals without relying on strong parametric assumptions. Do bootstrapping on network and security.  
+```{r, echo=FALSE, eval=TRUE}
+# Bootstrapping function
+boot_function = function() {
+  boot_data = sample(network_security_count, size =
+                       length(network_security_count), replace = TRUE)
+  return(mean(boot_data, na.rm = TRUE))
+}
+# Compute 95% Confidence Interval using Bootstrapping (1000 replications)
+boot_CI =quantile(replicate(1000, boot_function()), c(0.025, 0.975))
+# Print results
+print(boot_CI)
+# Comparing with t-test confidence interval
+t.test(network_security_count)
+
+```
 
 # IV. Predictive modeling (Regression) (**Minh**)
 
