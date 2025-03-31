@@ -4,7 +4,9 @@ subtitle: "What are the dominant research areas in Ontario's automotive sector, 
 author: "Minh Tran - 1006804914, Rayaan Syed - 1010231081"
 university: "University of Toronto - Scarborough"
 date: "March 15, 2025"
-output: pdf_document
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 
@@ -43,7 +45,7 @@ This report aims to examine the automotive research areas prioritizing by Ontari
 
 ### Data source
 
-Our dataset was collected by researchers from teh Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018.
+Our dataset was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018.
 
 **Table 1: Data set Variables**
 
@@ -153,25 +155,28 @@ From the table, we see that Carleton University, York University, and University
 
 # III. Statistical Analysis
 
-Let's pick our highest leading tag and see how it performs in bootstrapped data. We want to observe how it does compared to other tags and if it's the leading tag in all the samples by takign an average. 
+Let's pick our highest leading tag and see how it performs in bootstrapped data. We want to observe how it does compared to other tags and if it's the leading tag in all the samples by taking an average. 
 
 ```{r, echo= FALSE}
 # Bootstrapping 
 
 set.seed(50)
 research_summary = researchers %>%
-  pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to = "Research_Area") %>%
+  pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to = "Research_Area") %>% 
   filter(!is.na(Research_Area) & Research_Area != "")  # Sanity Check
 
 num_samples = 1000  # Number of bootstrap samples
 
-bootstrap_results = replicate(num_samples, { # Replicate 1000 times
-  sampled_data = research_summary %>% sample_n(n(), replace = TRUE)
-  total_researchers = nrow(sampled_data)
-
-  sampled_data %>%
-    group_by(Research_Area) %>%
-    summarise(Percentage = n() / total_researchers * 100)  # Percentage of each tag
+bootstrap_results = replicate(
+  # Replicate 1000 times
+  num_samples, 
+  { 
+    sampled_data = research_summary %>% sample_n(n(), replace = TRUE)
+    total_researchers = nrow(sampled_data)
+      # Percentage of each tag
+    sampled_data %>%
+      group_by(Research_Area) %>%
+      summarise(Percentage = n() / total_researchers * 100)
 }, simplify = FALSE)
 
 boot_results_df = bind_rows(bootstrap_results, .id = "Iteration") 
