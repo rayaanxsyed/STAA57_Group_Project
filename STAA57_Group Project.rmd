@@ -68,81 +68,82 @@ Some of the main categorical variables that can help categorizing the data inclu
 
 In addition, the data set also contains research fields as variable (e.g. Alternative Fuels, Autonomy and AI, Vehicle Design) to indicate whether or not a researcher work fall into that field of research
 
-# II. Data Overview Analysis (**Swaaa**)
+# 2. Data Overview Analysis (**Swaaa**)
 
-## *Descriptive Statistic*
-
--     Firstly lets try and change our data into some numeric values that can help us quantify and hence describe our data.
-
-Let us start by making a table summarizing the Research topics and the number of researchers in each of these fields.  
+## 2.1. **Descriptive Statistic*
 ```{r, echo=FALSE, eval=TRUE}
-research_count = researchers %>% group_by(Tag.1) %>%
+
+research_summary = researchers %>% 
+  pivot_longer(
+    cols = starts_with("Tag."),
+    names_to="Tag_Number",
+    values_to = "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "")
+
+research_count = research_summary %>%
+  group_by(Research_Area) %>%
   summarise(Count = n()) %>%
   mutate(Frequency = Count / sum(Count)) %>%
   arrange(desc(Count))
-top_research_field = research_count$Tag.1[1]
+
 kable(research_count, caption = "Summary statistics of research areas")
 ```
-  The above table provides summary statistics of research areas, displaying the number of researchers working in each field ("Count") and their relative proportions ("Frequency").
 
--   Now for the data we have found it will be interesting to take the top 3 fields from table above and find the top 5 institutions in each of these fields
-    -   Firstly the most dominant field of Network and Security
+The table above presents a summary statistic of research areas, indicating the number of researchers engaged in each category (Count) and their relative proportions ("Frequency"). The results reveal that **Networks and Security**, **Autonomy and AI**, and **Transportation and Charging** are the most prominent fields, attracting the highest number of researchers
+
+To further example institutional alignment with these research trends, the data set will be analyzed to identify the top five institutions employing the largest number of researchers in each of the three leading fields identified above.
+
 ```{r, echo=FALSE, eval=TRUE}
-top_institutions = researchers %>%
-  filter(Tag.1 == top_research_field) %>%
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[1]) %>%
   count(Institution, sort = TRUE)%>%
   rename(Reseacher_count = n)%>% head(5)
-kable(top_institutions, caption = paste("Top 5 Institutions in", top_research_field))
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[1]))
 ```
-  The table above will highlight the top five institutions with the most researchers working in Networks and Security. 
 
-- Let's take the second most dominant field which is Autonomy and AI
 ```{r, echo=FALSE, eval=TRUE}
-research_field2 = research_count$Tag.1[2]
-top_institutions = researchers %>%
-  filter(Tag.1 == research_field2) %>%
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[2]) %>%
   count(Institution, sort = TRUE)%>%
   rename(Reseacher_count = n)%>% head(5)
-kable(top_institutions, caption = paste("Top 5 Institutions in", research_field2))
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[2]))
 ```
 
 
--   Finally the third most trending field of research is Transportation and charging whose table looks like:
-
 ```{r, echo=FALSE, eval=TRUE}
-research_field3 = research_count$Tag.1[3]
-top_institutions = researchers %>%
-  filter(Tag.1 == research_field3) %>%
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[3]) %>%
   count(Institution, sort = TRUE)%>%
   rename(Reseacher_count = n)%>% head(5)
-kable(top_institutions, caption = paste("Top 5 Institutions in", research_field3))
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[3]))
 ```
-A very interesting observation is the fact that Carleton University has a prominent number of researchers in all three of the top research fields. The most researched field is by far network and security which provides a very cool insight into where the world is heading. The world requires security and more importantly it is most required on the internet as if we are hacked on the internet we can lose a lot of information. Overall, there is a good split between three of the top research fields.
+Carleton University has a significance number of researchers across three leading research fields, followed closely by the University of Toronto, University of Waterloo and Ryerson University (now Toronto Metropolitan University). This trend aligns with the fact that these institutions are large, metropolitan universities, particularly in cities such as Toronto and Ottawa, which have established reputations for excellence in technological research. Given their substantial resources and expertise, these universities play a crucial role in shaping Canada's research priorities and should be central to discussions on nation's research agenda
 
-## *Graph & Visualizations*
-Graphs are a really important visual representation that helps us visualize how the dat set is distributed it allows us to analyse the variety of variables found in the data and how it relates to other variables across. 
-
--   Bar chart: Research distribution across institution
+## 2.2. **Graph & Visualizations**
 
 ```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   coord_flip() +
   theme_minimal() +
-  labs(title = "Research Distribution Across Institutions",
+  labs(title = "Researcher Distribution Across Institutions",
        x = "Institution", y = "Count")
 ```
+The graph presents a visual representation of total number of researchers employed by each institutions. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry. Notably while Carleton University leads in term of researchers specializing in key fields, University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policy makers and investors, enabaling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
 
--  The title "Research Distribution Across Institutions" clearly indicates the purpose of the graph.
--  The x-axis (Institutions) and y-axis (Counts of Researchers) are labeled appropriately. Let us use the Table 1
--   Pie chart: Proportion of of different research fields
 
 ```{r, echo=FALSE, eval=TRUE}
 fields = c("Networks and security", "Autonomy and AI", "Transportation and charging",
             "Industrial processes", "Software", "Other")
 
-frequencies = c(0.1229358, 0.0825688, 0.0697248, 0.0623853, 0.0587156, 
-                 1 - sum(0.1229358, 0.0825688, 0.0697248, 0.0623853, 0.0587156))
+NWS_portion = research_count$Frequency[research_count$Research_Area=="Networks and security"]
+AA_portion = research_count$Frequency[research_count$Research_Area=="Autonomy and AI"]
+TC_portion = research_count$Frequency[research_count$Research_Area=="Transportation and charging"]
+IP_poriton = research_count$Frequency[research_count$Research_Area=="Industrial processes"]
+Soft_portion = research_count$Frequency[research_count$Research_Area=="Software"]
+Other_porition = 1 - sum(NWS_portion,AA_portion, TC_portion, IP_poriton, Soft_portion)
+
+frequencies = c(NWS_portion,AA_portion,TC_portion,IP_poriton,Soft_portion,Other_porition)
 
 # Create a data frame
 df = data.frame(fields, frequencies)
@@ -153,17 +154,27 @@ ggplot(df, aes(x = "", y = frequencies, fill = fields)) +
   coord_polar(theta = "y") +
   theme_void() +
   labs(title = "Proportion of Research Fields") +
-  scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f"))
+  scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f")) + 
+  geom_text(aes(label = paste0(round(frequencies*100, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 3)
 ```
 
+Each segment of the graph represents the portion of researchers engaged in a specific field, based on data aggregated from multiple institutions. Given the number of research categories, the visualization focuses on the five fields with the highest concentration of researchers, while grouping the remaining fields under the category "Other". The data reveal that although the top five fields account for the majority of researcher, the differences among them is not significant. Furthermore as we can see that the Other group still maintain the significant portion of researchers indicating that fields in the top 5 group are not distinct from fields in the Other group by a significant gap.
 
--  Each slice represents the proportion of researchers working in that field, based on data aggregated from multiple institutions. These are the top five fields researched and all the other fields combined. A very interesting discovery is the fact that the proportion of the top five fields combined is still less than the proportion of all other fields as we see on the graph in pink.
+```{r, echo=FALSE, eval=TRUE, warning=FALSE, message=FALSE}
+reseach_field_num = researchers %>% rowwise() %>%
+  mutate(field_num = 
+           sum(across(starts_with("Tag."), ~ .x != "" & !is.na(.x))))%>%
+  ungroup()
+ 
+ ggplot(reseach_field_num, aes(x=field_num,
+                                y = (..count.. / sum(..count..))*100)) + 
+   geom_histogram(fill = "steelblue", size = 10) +
+   labs(title = "Distribution of Researchers By Number of Research Field",
+       x = "Number of research field", y = "% of researcher")
 
--   History, frequency of research tag
-
-
-The graph is a bar chart showing the frequency distribution of different research fields based on the Tag.1 variable.
--  The graph likely has bars of varying heights, showing which research fields are more popular.
+```
+This diagram illustrates the distribution of researchers based on the number of research fields they are associated with, as indicated by the "Tag" columns. If a researcher has a value in only one "Tag" column, they are considered to be specialized in a single field. Similarly, researchers with values in multiple columns are associated with multiple fields. The chart results indicate that the majority of researchers in the data set specialize in only one or two research fields as these two categories collectively account for more than 60% of the total researcher population.These findings could serve as a valuable resource for universities and educators, enabling them to tailor their efforts toward training researchers with specialized or generalized expertise according to the needs of the industry.
 
 # III. Statistical Analysis (**rayaanxsyed**)
 
