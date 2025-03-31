@@ -155,7 +155,7 @@ From the table, we see that Carleton University, York University, and University
 
 Let's pick our highest leading tag and see how it performs in bootstrapped data. We want to observe how it does compared to other tags and if it's the leading tag in all the samples by takign an average. 
 
-```{r, echo= FALSE}
+```{r, echo= FALSE,message= FALSE}
 # Bootstrapping 
 
 set.seed(50)
@@ -189,10 +189,10 @@ ggplot(average_percentage_df, aes(x = reorder(Research_Area, Mean_Percentage), y
        x = "Research Area", y = "Average Percentage (%)") +
   theme_minimal()
 ```
-In this graph, the data of the institutions and their tags have been replicated 1000 times. We take the average percentage to see how they perform over the 1000 trials and gain a graph of each tags performance. 
+In this graph, the data of the institutions and their tags have been replicated 1000 times. We take the average percentage to see how they perform over the 1000 trials and gain a graph of each tags performance. By inspection, "Networks and Security" and "Autonomy and AI" lead from our 1000 samples. 
 
 
-```{r}
+```{r, message= FALSE}
 # Confidence Interval for "Networks and security"
 network_security_percentage = boot_results_df %>%
   filter(Research_Area == "Networks and security") %>% pull(Percentage)
@@ -209,49 +209,41 @@ By taking a confidence interval for Network and Security, we observe that the tr
 Let's examine how Networks and Security performs when compared to the 2nd highest tag (Autonomy and AI) in our bootstrapped data to see if it always leads the data by a hypothesis test.
 
 
-```{r}
-
+```{r, message= FALSE}
 # 2nd-ranked tag
 second_place_tag = average_percentage_df$Research_Area[2]
 
-# Prepare data for paired comparison
-paired_data = boot_results_df %>%
-  filter(Research_Area %in% c("Networks and security", second_place_tag)) %>%
-  pivot_wider(names_from = Research_Area, values_from = Percentage)
+# Prepare data for normal t-test
+network_data = boot_results_df %>%
+  filter(Research_Area == "Networks and security") %>%
+  pull(Percentage)
 
-# Paired t-test (one-sided: Networks and Security > 2nd place)
+second_place_data = boot_results_df %>%
+  filter(Research_Area == second_place_tag) %>%
+  pull(Percentage)
+
+# Standard t-test to show Networks and Security > 2nd place
 t_test_result = t.test(
-  paired_data$`Networks and security`,
-  paired_data[[second_place_tag]],
-  paired = TRUE,
-  alternative = "greater"  # Tests if Networks and Security > 2nd place
+  network_data,
+  second_place_data,
+  alternative = "greater"  
 )
 
-cat("Paired t-test: Networks and Security vs.", second_place_tag, "\n")
-cat("Mean % Network and Security:", mean(paired_data$`Networks and security`), "\n")
-cat("Mean % (", second_place_tag, "):", mean(paired_data[[second_place_tag]]), "\n")
+cat("Independent t-test: Networks and Security vs.", second_place_tag, "\n")
+cat("Mean % Network and Security:", mean(network_data), "\n")
+cat("Mean % (", second_place_tag, "):", mean(second_place_data), "\n")
 cat("T-statistic:", t_test_result$statistic, "\n")
-cat("P-value:", t_test_result$p.value, "\n")
+cat("P-value:", t_test_result$p.value, "\n") # Print results
 
 if (t_test_result$p.value < 0.05) {
-  cat("Reject H₀. Networks and Security is significantly higher than the other tags. (p < 0.05).")
+  cat("Reject H0. Networks and Security is significantly higher than the other tags. (p < 0.05).")
 } else {
-  cat("No significant difference (p ≥ 0.05).")
+  cat("No significant difference (p >= 0.05).") # Check hypothesis
 }
+
+
 ```
 Based off our paired t-test, we get a average Network Security score of 8.001923 and a average Autonomy and AI score of 6.806818. Since the averages are distant, we can expect a large t statistic and a small p value. 
 
-We observe a t statistic value of 31.29503 and a extremely small p value 1.070572e-150 (p < 0.05), rejecting the null hypothesis and observing Networks and Security is significantly higher than the other tags.
+We observe a t statistic value of 33.42531 and a extremely small p value 3.359765e-195  (p < 0.05), rejecting the null hypothesis and observing Networks and Security is significantly higher than the other tags.
 
-
-# IV. Predictive modeling (Regression)
-
-Build a regression model to predict number of researcher in a field, institutions
-
-Build a regression model to see if an institution is likely to have to a grant funding
-
-Using cross-validation to validate the 2 models built above
-
-# V. Summary
-
-# Appendix
