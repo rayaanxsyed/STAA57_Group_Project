@@ -75,7 +75,7 @@ In addition, the data set also contains research fields as variable (e.g. Altern
 
 -   Table 2: Summary statistics of research areas (count, frequency)
     -   Identify the most common research fields
-```{r}
+    ```{r}
 research_count = researchers %>% group_by(Tag.1) %>%
   summarise(Count = n()) %>%
   mutate(Frequency = Count / sum(Count)) %>%
