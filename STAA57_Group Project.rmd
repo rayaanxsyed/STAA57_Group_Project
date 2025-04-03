@@ -145,12 +145,6 @@ top_research_by_uni
 
 From the table, we see that Carleton University, York University, and University of Ottawa have 20%+ of their research contributions among their highest fields. Waterloo University and University Of Ontario Institute Of Technology have the most diversification as well as high amounts of researchers across several fields. 
 
-## *Graph & Visualizations*
-
--   Bar chart: Research distribution across institution
--   Pie chart: Proportion of of different research fields
--   History, frequency of research tag
-
 # III. Statistical Analysis
 
 Let's pick our highest leading tag and see how it performs in bootstrapped data. We want to observe how it does compared to other tags and if it's the leading tag in all the samples by taking an average. 
