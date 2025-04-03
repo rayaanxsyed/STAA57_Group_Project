@@ -58,7 +58,7 @@ researchers = researchers %>% select(!Noise..Vibration.and.Harshness )
 
 Some of the main categorical variables that can help categorizing the data include
 
-- **Researcher.Name**
+- **Researcher.Name**: Names of the researchers.
 
 - **Institution**: Name of university or research center that the researcher works at
 
@@ -68,9 +68,13 @@ Some of the main categorical variables that can help categorizing the data inclu
 
 In addition, the data set also contains research fields as variable (e.g. Alternative Fuels, Autonomy and AI, Vehicle Design) to indicate whether or not a researcher work fall into that field of research
 
-# 2. Data Overview Analysis (**Swaaa**)
+# 2. Data Overview Analysis (**Swajeet**)
 
-## 2.1. **Descriptive Statistic*
+## 2.1. **Descriptive Statistic**
+
+## Tables
+
+## An initial Summary table of all research areas.
 ```{r, echo=FALSE, eval=TRUE}
 
 research_summary = researchers %>% 
@@ -93,6 +97,7 @@ The table above presents a summary statistic of research areas, indicating the n
 
 To further example institutional alignment with these research trends, the data set will be analyzed to identify the top five institutions employing the largest number of researchers in each of the three leading fields identified above.
 
+
 ```{r, echo=FALSE, eval=TRUE}
 top_institutions = research_summary %>%
   filter(Research_Area == research_count$Research_Area[1]) %>%
@@ -100,6 +105,7 @@ top_institutions = research_summary %>%
   rename(Reseacher_count = n)%>% head(5)
 kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[1]))
 ```
+
 
 ```{r, echo=FALSE, eval=TRUE}
 top_institutions = research_summary %>%
@@ -121,6 +127,8 @@ Carleton University has a significance number of researchers across three leadin
 
 ## 2.2. **Graph & Visualizations**
 
+## 2.2.1 An informative Bar chart on Researchers Distribution
+
 ```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
   geom_bar(stat = "identity", fill = "steelblue") +
@@ -130,6 +138,8 @@ Carleton University has a significance number of researchers across three leadin
        x = "Institution", y = "Count")
 ```
 The graph presents a visual representation of total number of researchers employed by each institutions. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry. Notably while Carleton University leads in term of researchers specializing in key fields, University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policy makers and investors, enabaling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
+
+## 2.2.2 An interesting Pie Chart on Research Fields 
 
 
 ```{r, echo=FALSE, eval=TRUE}
@@ -161,6 +171,8 @@ ggplot(df, aes(x = "", y = frequencies, fill = fields)) +
 
 Each segment of the graph represents the portion of researchers engaged in a specific field, based on data aggregated from multiple institutions. Given the number of research categories, the visualization focuses on the five fields with the highest concentration of researchers, while grouping the remaining fields under the category "Other". The data reveal that although the top five fields account for the majority of researcher, the differences among them is not significant. Furthermore as we can see that the Other group still maintain the significant portion of researchers indicating that fields in the top 5 group are not distinct from fields in the Other group by a significant gap.
 
+## 2.2.3 Histogram of Research Variance by Tags.
+
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE, message=FALSE}
 reseach_field_num = researchers %>% rowwise() %>%
   mutate(field_num = 
@@ -175,11 +187,12 @@ reseach_field_num = researchers %>% rowwise() %>%
 
 ```
 This diagram illustrates the distribution of researchers based on the number of research fields they are associated with, as indicated by the "Tag" columns. If a researcher has a value in only one "Tag" column, they are considered to be specialized in a single field. Similarly, researchers with values in multiple columns are associated with multiple fields. The chart results indicate that the majority of researchers in the data set specialize in only one or two research fields as these two categories collectively account for more than 60% of the total researcher population.These findings could serve as a valuable resource for universities and educators, enabling them to tailor their efforts toward training researchers with specialized or generalized expertise according to the needs of the industry.
+\pagebreak
 
 # III. Statistical Analysis (**rayaanxsyed**)
 
 ```{r, echo=FALSE, eval=TRUE}
-research_summary = researchers %>%
+research_summary2 = researchers %>%
   pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to =
                  "Research_Area") %>%
   filter(!is.na(Research_Area) & Research_Area != "") %>%
@@ -205,7 +218,7 @@ t_test_result$conf.int
 
 -  Let's choose the most trending research topic (Network and security) and do a confidence interval for the average number of researchers in the field.
 ```{r, echo=FALSE, eval=TRUE}
-network_security_count = research_summary$`Networks and security`
+network_security_count = research_summary2$`Networks and security`
 # Perform t-test to get confidence interval
 t_test_result = t.test(network_security_count, conf.level = 0.95)
 # Display confidence interval
@@ -216,7 +229,7 @@ t_test_result$conf.int
 Hypothesis Testing
 For the topic (Network and security) and do a hypothesis test for the topic.
 ```{r, echo=FALSE, eval=TRUE}
-network_security_count = research_summary$`Networks and security`
+network_security_count = research_summary2$`Networks and security`
 # Perform hypothesis test (H0: mean = 5)
 t_test_result = t.test(network_security_count, mu = 5, alternative = "two.sided")
 
@@ -229,14 +242,14 @@ Let's pick our highest leading tag and see how it performs in bootstrapped data.
 # Bootstrapping 
 
 set.seed(50)
-research_summary = researchers %>%
+research_summary3 = researchers %>%
   pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to = "Research_Area") %>%
   filter(!is.na(Research_Area) & Research_Area != "")  # Sanity Check
 
 num_samples = 1000  # Number of bootstrap samples
 
 bootstrap_results = replicate(num_samples, { # Replicate 1000 times
-  sampled_data = research_summary %>% sample_n(n(), replace = TRUE)
+  sampled_data = research_summary3 %>% sample_n(n(), replace = TRUE)
   total_researchers = nrow(sampled_data)
 
   sampled_data %>%
