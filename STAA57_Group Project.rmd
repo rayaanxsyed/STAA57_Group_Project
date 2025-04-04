@@ -1,12 +1,13 @@
 ---
-title: "**\\Huge STAA57 Group Project**"
-subtitle: "**\\Large What are the dominant research areas in Ontario's automotive sector, and how do institutions specialize in different fields**"
-author: "Minh Tran - 1006804914, Swajeet Jadhav - 1009888276"
+title: "STAA57 Group Project"
+subtitle: "What are the dominant research areas in Ontario's automotive sector, and how do institutions specialize in different fields?"
+author: "Minh Tran - 1006804914, Rayaan Syed - 1010231081"
 university: "University of Toronto - Scarborough"
-date: "2025-03-15"
-output: pdf_document
----
-
+date: "March 15, 2025"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+    
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -17,8 +18,8 @@ library(tidyverse)
 library(readxl)
 library(dplyr)
 library(knitr)
-library(kableExtra)
-library(pROC)
+library(kableExtra) 
+library(ggplot2)
 ```
 
 ```{r, include = FALSE }
@@ -30,198 +31,319 @@ researcher_tags = read_excel("ontarioautoresearcherstags.xls")
 
 \pagebreak
 
-# I. Introduction
+# 1. Introduction
 
-## Research Goal
+## 1.1. Research Goal
 
-With the growing popularity of electric vehicles (EVs) and the rapid advancements in artificial intelligence (AI), particularly in the development of autonomous vehicles like Tesla, it is crucial for automotive research facilities in Ontario to focus their efforts and resources on the right areas. This will ensure a significant contribution to the academia world while assisting the government in implementing effective policies and educational institutions better educate, prepare the next generation of labors. 
+With the growing popularity of electric vehicles (EVs) and the rapid advancements in artificial intelligence (AI), particularly in the development of autonomous vehicles like Tesla, it is crucial for automotive research facilities in Ontario to focus their efforts and resources on the right areas. This will ensure a significant contribution to the academia world while assisting the government in implementing effective policies and educational institutions better educate, prepare the next generation of labors.
 
-This report aims to examine the automotive research areas prioritizing by Ontario's research facilities and identify specialized facilities in trending fields. It will also explore which areas are attracting the most researchers and which institutions are specializing in particular research domains.
+This report aims to examine the automotive research categories prioritized by Ontario's research facilities and identify specialized facilities in trending fields. It will also explore which areas are attracting the most funding from the Canadian government and major funds. Specifically this study seeks to address the following questions:
 
-## Dataset description
+1.  What is the leading research category in the automotive industry based on the number of researchers?
+2.  Which institutions are aligning with research trends by employing a significant number of researchers in the top three leading research categories?
+3.  Which primary research categories are attracting the most funding
+
+## 1.2. Dataset description
 
 ### Data source
 
-Our data set was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018. A supporting description table of the research tag will be provided in the Appendix for better understanding of the main data set values. 
+Our data set was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018. Each entry record a researcher's information regarding their working place and the research areas of expertise. A supporting table providing better descriptions of the research tags will be provided in the Appendix.
 
-**Table 1: Data set Variables**
 
-```{r, echo=FALSE, eval=TRUE}
-glimpse(researchers)
-```
+**Data set Variables**
+1.  Institution: Name of the researcher institution
+2.  Researcher.Name: Researcher name
+3.  Research.Areas: Researcher general research area
+4.  Researcher.Chairs.Grant.Funding: Name of the funding if that researcher have one
+5.  Tag. 1 \~ 5: Categorization of researchers research areas
+6.  Remaining columns: Research categories. If a researchers is part of a category they will have an x in that column.
 
-Based on a summary of the data set, the `Noise..Viration.and.Harshness` variable was corrupted during the process of uploading or collecting the data and therefore will not be used in our report
+### Data clean up
 
-```{r, include = FALSE}
+Based on the data set summary, our team identified that the 'Noise..Vibration.and.Harshness\` variable was corrupted during data collection or uploading. As a result, it will not be included in our report. Additionally, we observed that Brock University, Lakehead University, Royal Military College, and Laurentian University each had fewer than two researchers, suggesting incomplete data collection for these institutions. Therefore, researcher entries from these institutions will also be excluded.
+
+```{r}
 # Remove variable with errors
 researchers = researchers %>% select(!Noise..Vibration.and.Harshness )
+
+# We removed Brock University, Lakehead University, Royal Military College, and Laurentian University from our dataset as each contained less than two entries. These universities likely did not report their full research info to the dataset collectors, thus we removed it to maintain accuracy. 
+
+researchers = researchers %>% filter(!Institution %in% c("Brock University", "Lakehead University", "Laurentian University", "Royal Military College"))
+
 ```
 
 Some of the main categorical variables that can help categorizing the data include
 
-- **Researcher.Name**
+# 2. Data Overview Analysis (**Swajeet**)
 
-- **Institution**: Name of university or research center that the researcher works at
+## 2.1. **Descriptive Statistic**
 
-- **Research.Areas**: Researcher general field of research
+## Tables
 
-- **Tag**: Researcher's specialized field of research
+```{r, echo=FALSE, eval=TRUE}
 
-In addition, the data set also contains research fields as variable (e.g. Alternative Fuels, Autonomy and AI, Vehicle Design) to indicate whether or not a researcher work fall into that field of research
+research_summary = researchers %>% 
+  pivot_longer(
+    cols = starts_with("Tag."),
+    names_to="Tag_Number",
+    values_to = "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "")
 
-# II. Data Overview Analysis (**Swaaa**)
 
-## *Descriptive Statistic*
+From our dataset, we are able to extract the disparity of researchers across fields of research. This would include research fields such as "Network and Security", "Autonomy and AI", "Nanotechnology", and other vehicle-related fields.  
+    
+```{r,echo=FALSE}
+# Identifying the amount of researchers across the fields of automotive design.
+research_summary = researchers %>%
+  pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to = "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "") %>%  # Sanity check
+  count(Institution, Research_Area, sort = TRUE) %>%  # Count occurrences
+  pivot_wider(names_from = Research_Area, values_from = n, values_fill = 0)  # Use wide format
 
--   Table 2: Summary statistics of research areas (count, frequency)
-    -   Identify the most common research fields
-```{r}
-research_count = researchers %>% group_by(Tag.1) %>%
+print(research_summary)
+
+```
+  Upon reviewing the table, the three leading researching fields are "Networks and Security", "Autonomy and AI", and "Polymers and Composite Materials". The universities have reported 50+ researchers working in these ares which would indicate there is significant progress being made. On the contrast, "Crashworthiness" and "Mechatronics" are among the least studied fields with less than 10 researchers total.
+  
+  
+  
+We now check for the dominating research field for each university. The table below is generated by finding the max researchers in an institution across a research field. 
+    
+    
+```{r,echo=FALSE}
+# Identifying the dominant field for each university
+    
+research_summary$Institution = research_summary$Institution %>%
+  str_to_title() %>%  # Brief sanity check to make sure institution strings are one. 
+  str_trim()    # Ex. "Ryerson University" should be equal to "Ryerson university    " 
+
+
+top_research_by_uni = research_summary %>%
+  pivot_longer(cols = -Institution, names_to = "Research_Area", values_to = "Count") %>%
+  group_by(Institution) %>%
+  slice_max(Count, n = 1, with_ties = FALSE) %>%  # Get the top research category per institution
+  select(Institution, Research_Area)
+
+print(top_research_by_uni)
+
+```
+  From the table, the universities are associated with their highest producing research field. Several universities are mostly researching "Networks and Security" like Carleton University, University of Waterloo, University of Ontario Institute of Technology. 
+  
+  This information can also be crucial to understand how the fields with low researchers from the previous table are not being targeted enough by the universities.
+  
+  
+  
+
+We now check for the percentage breakdown of the university's dominating research field and their contribution as a whole. This is important to understand the concentration of university's in specific fields and whether some diversification can be made to the university.     
+```{r, echo= FALSE}
+# Identifying percentage breakdown of each university and their study on each field. 
+
+research_summary = research_summary %>%
+  mutate(Total_Research = rowSums(across(-Institution)))  # Sum all research areas per university
+research_count = research_summary %>%
+  group_by(Research_Area) %>%
   summarise(Count = n()) %>%
   mutate(Frequency = Count / sum(Count)) %>%
   arrange(desc(Count))
-top_research_field = research_count$Tag.1[1]
+
 kable(research_count, caption = "Summary statistics of research areas")
 ```
 
--   Table 3: Top 5 institutions with the most researchers in the top research field
-    -   Identify the most dominant institution in a field
-```{r}
-top_institutions = researchers %>%
-  filter(Tag.1 == top_research_field) %>%
+The table above presents a summary statistic of research areas, indicating the number of researchers engaged in each category (Count) and their relative proportions ("Frequency"). The results reveal that **Networks and Security**, **Autonomy and AI**, and **Transportation and Charging** are the most prominent fields, attracting the highest number of researchers
+
+To further example institutional alignment with these research trends, the data set will be analyzed to identify the top five institutions employing the largest number of researchers in each of the three leading fields identified above.
+
+
+```{r, echo=FALSE, eval=TRUE}
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[1]) %>%
   count(Institution, sort = TRUE)%>%
   rename(Reseacher_count = n)%>% head(5)
-kable(top_institutions, caption = paste("Top 5 Institutions in", top_research_field))
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[1]))
 ```
-## *Graph & Visualizations*
 
--   Bar chart: Research distribution across institution
-```{r}
+
+```{r, echo=FALSE, eval=TRUE}
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[2]) %>%
+  count(Institution, sort = TRUE)%>%
+  rename(Reseacher_count = n)%>% head(5)
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[2]))
+```
+
+
+```{r, echo=FALSE, eval=TRUE}
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[3]) %>%
+  count(Institution, sort = TRUE)%>%
+  rename(Reseacher_count = n)%>% head(5)
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[3]))
+```
+Carleton University has a significance number of researchers across three leading research fields, followed closely by the University of Toronto, University of Waterloo and Ryerson University (now Toronto Metropolitan University). This trend aligns with the fact that these institutions are large, metropolitan universities, particularly in cities such as Toronto and Ottawa, which have established reputations for excellence in technological research. Given their substantial resources and expertise, these universities play a crucial role in shaping Canada's research priorities and should be central to discussions on nation's research agenda
+
+## 2.2. **Graph & Visualizations**
+
+
+```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   coord_flip() +
   theme_minimal() +
-  labs(title = "Research Distribution Across Institutions",
+  labs(title = "Researcher Distribution Across Institutions",
        x = "Institution", y = "Count")
 ```
--   Pie chart: Proportion of of different research fields
-```{r}
- ggplot(research_count, aes(x = "", y = Count, fill = Tag.1)) +
-  geom_bar(stat = "identity", width = 1) +  geom_col(color = "black") +
-  coord_polar("y", start = 0) +
+
+The graph presents a visual representation of total number of researchers employed by each institutions. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry. Notably while Carleton University leads in term of researchers specializing in key fields, University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policy makers and investors, enabaling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
+
+
+```{r, echo=FALSE, eval=TRUE}
+fields = c("Networks and security", "Autonomy and AI", "Transportation and charging",
+            "Industrial processes", "Software", "Other")
+
+NWS_portion = research_count$Frequency[research_count$Research_Area=="Networks and security"]
+AA_portion = research_count$Frequency[research_count$Research_Area=="Autonomy and AI"]
+TC_portion = research_count$Frequency[research_count$Research_Area=="Transportation and charging"]
+IP_poriton = research_count$Frequency[research_count$Research_Area=="Industrial processes"]
+Soft_portion = research_count$Frequency[research_count$Research_Area=="Software"]
+Other_porition = 1 - sum(NWS_portion,AA_portion, TC_portion, IP_poriton, Soft_portion)
+
+frequencies = c(NWS_portion,AA_portion,TC_portion,IP_poriton,Soft_portion,Other_porition)
+
+# Create a data frame
+df = data.frame(fields, frequencies)
+
+# Create the pie chart
+ggplot(df, aes(x = "", y = frequencies, fill = fields)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
   theme_void() +
-  labs(title = "Proportion of 
-  Research Fields")
-```
--   History, frequency of research tag
-```{r}
- ggplot(researchers, aes(x = Tag.1)) +
-  geom_bar(fill = "blue", color = "black") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(title = "Frequency of Research Tags", x = "Research Field", y = "count")
-
+  labs(title = "Proportion of Research Fields") +
+  scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f")) + 
+  geom_text(aes(label = paste0(round(frequencies*100, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 3)
 ```
 
-# III. Statistical Analysis (**rayaanxsyed**)
+Each segment of the graph represents the portion of researchers engaged in a specific field, based on data aggregated from multiple institutions. Given the number of research categories, the visualization focuses on the five fields with the highest concentration of researchers, while grouping the remaining fields under the category "Other". The data reveal that although the top five fields account for the majority of researcher, the differences among them is not significant. Furthermore as we can see that the Other group still maintain the significant portion of researchers indicating that fields in the top 5 group are not distinct from fields in the Other group by a significant gap.
 
-We could pick an area we think that will be most trending (AI for example) and test to see if that is true
+```{r, echo=FALSE, eval=TRUE, warning=FALSE, message=FALSE}
+reseach_field_num = researchers %>% rowwise() %>%
+  mutate(field_num = 
+           sum(across(starts_with("Tag."), ~ .x != "" & !is.na(.x))))%>%
+  ungroup()
+ 
+ ggplot(reseach_field_num, aes(x=field_num,
+                                y = (..count.. / sum(..count..))*100)) + 
+   geom_histogram(fill = "steelblue", size = 10) +
+   labs(title = "Distribution of Researchers By Number of Research Field",
+       x = "Number of research field", y = "% of researcher")
 
-- Confidence interval for the average number of researcher 
 
-- Hypothesis Testing
+```
+This diagram illustrates the distribution of researchers based on the number of research fields they are associated with, as indicated by the "Tag" columns. If a researcher has a value in only one "Tag" column, they are considered to be specialized in a single field. Similarly, researchers with values in multiple columns are associated with multiple fields. The chart results indicate that the majority of researchers in the data set specialize in only one or two research fields as these two categories collectively account for more than 60% of the total researcher population.These findings could serve as a valuable resource for universities and educators, enabling them to tailor their efforts toward training researchers with specialized or generalized expertise according to the needs of the industry.
 
-- Bootstrapping
 
-# IV. Predictive modeling (Regression) (**Minh**)
+\pagebreak
 
-**1. Logistic Regression Model**
+# III. Statistical Analysis
 
-*1.1. Model explanation*
+Let's pick our highest leading tag and see how it performs in bootstrapped data. We want to observe how it does compared to other tags and if it's the leading tag in all the samples by taking an average. 
 
-The allocation of research funding plays a pivotal role in identifying key research fields that attract the attention of funding bodies such as Canada Research Chair Program and other major investors. These funding trend are essential indicators of the areas prioritized by the Canadian government and industry stakeholders in the automotive sector. Understanding these trends can provide insight into the direction of research investment, thereby influencing strategic decision in academia and industry alike.
+```{r, echo= FALSE}
+# Bootstrapping 
 
-To analyze the factors influencing research funding, we employed a logistic regression model with the primary dependent variable being **is_Funded**. This variable take a value of 1 if the research has secured funding from the Canada Research Chair program or other similar grants, and 0 otherwise. The independent variables include various research's primary fields as categorized in **Tag.1** column of the data set.
+set.seed(50)
+research_summary = researchers %>%
+  pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to = "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "")  # Sanity Check
 
-*1.2. Result and Key Findings*
-```{r, include=FALSE}
-reg_data = na.omit(researchers)
-#This code chunk dynamically create a dummy variable for all research field columns 
+num_samples = 1000  # Number of bootstrap samples
 
-# Dynamically get all research field indicating columns after "Tag.5 column"
-start_col = which(names(reg_data) == "Tag.5") + 1
-research_indicator_col = names(reg_data)[start_col:length(names(reg_data))]
+bootstrap_results = replicate(num_samples, { # Replicate 1000 times
+  sampled_data = research_summary %>% sample_n(n(), replace = TRUE)
+  total_researchers = nrow(sampled_data)
 
-# Add new summary variables for each of the research field indicating columns
-for (col in research_indicator_col){
-  new_col_name = paste0("is_", col)
-  reg_data[[new_col_name]] = ifelse(tolower(reg_data[["Tag.1"]])==tolower(gsub("\\."," ", col)),1,0)
+  sampled_data %>%
+    group_by(Research_Area) %>%
+    summarise(Percentage = n() / total_researchers * 100)  # Percentage of each tag
+}, simplify = FALSE)
+
+boot_results_df = bind_rows(bootstrap_results, .id = "Iteration") 
+
+average_percentage_df = boot_results_df %>%
+  group_by(Research_Area) %>%
+  summarise(Mean_Percentage = mean(Percentage)) %>%
+  arrange(desc(Mean_Percentage))  # Sort by average percentage in descending order for readability
+
+# Plot the horizontal graph
+ggplot(average_percentage_df, aes(x = reorder(Research_Area, Mean_Percentage), y = Mean_Percentage)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  coord_flip() +  # Flip to make it horizontal
+  labs(title = "Average Percentage of Researchers in Each Tag",
+       x = "Research Area", y = "Average Percentage (%)") +
+  theme_minimal()
+```
+In this graph, the data of the institutions and their tags have been replicated 1000 times. We take the average percentage to see how they perform over the 1000 trials and gain a graph of each tags performance. By inspection, "Networks and Security" and "Autonomy and AI" lead from our 1000 samples. 
+
+```{r, echo= FALSE}
+
+# Finding 95% Confidence Interval of Each Research Area
+ci_table <- boot_results_df %>%
+  group_by(Research_Area) %>%
+  summarise(
+    Mean_Percentage = mean(Percentage, na.rm = TRUE),
+    Lower_CI = quantile(Percentage, 0.025, na.rm = TRUE),
+    Upper_CI = quantile(Percentage, 0.975, na.rm = TRUE)
+  )
+
+
+ggplot(ci_table, aes(x = reorder(Research_Area, Mean_Percentage), y = Mean_Percentage)) +
+  geom_point(color = "blue", size = 3) +  # Mean values as points
+  geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.2, color = "red") +
+  coord_flip() +  
+  labs(
+    title = "95% Confidence Intervals for Research Areas",
+    x = "Research Area",
+    y = "Mean Percentage"
+  ) +
+  theme_minimal()
+```
+By taking confidence intervals for each research tag, we gain data regarding the ranges of each tag within the 1000 trials. While "Networks and Security" leads the dataset by inspection, the CI interval overlaps with "Autonomy and AI". It is necessary to verify if in any of the 1000 trials if "Networks and Security" loses even once to "Autonomy and AI" to conclude it always leads in our dataset. 
+
+Let's examine how "Networks and Security" performs when compared to the 2nd highest tag (Autonomy and AI) in the bootstrapped data to see if it leads in the hypothesis test. Let's choose H0: Avg Percentage of Researchers work in Networks and Security < Avg Percentage of Researchers work in Autonomy and AI. H1: Avg Percentage of Researchers work in Networks and Security >= Avg Percentage of Researchers work in Autonomy and AI
+```{r, echo= FALSE}
+# 2nd-ranked tag
+second_place_tag = average_percentage_df$Research_Area[2]
+
+# Prepare data for t-test
+network_data = boot_results_df %>%
+  filter(Research_Area == "Networks and security") %>%
+  pull(Percentage)
+
+second_place_data = boot_results_df %>%
+  filter(Research_Area == second_place_tag) %>%
+  pull(Percentage)
+
+# t-test to show Networks and Security > 2nd place
+t_test_result = t.test(
+  network_data,
+  second_place_data,
+  alternative = "greater"  
+)
+
+cat("Independent t-test: Networks and Security vs.", second_place_tag, "\n")
+cat("Mean % Network and Security:", mean(network_data), "\n")
+cat("Mean % (", second_place_tag, "):", mean(second_place_data), "\n")
+cat("T-statistic:", t_test_result$statistic, "\n")
+cat("P-value:", t_test_result$p.value, "\n") # Print results
+
+if (t_test_result$p.value < 0.05) {
+  cat("Reject H0. Networks and Security is significantly higher than the other tags. (p < 0.05).")
+} else {
+  cat("No significant difference (p >= 0.05).") # Check hypothesis
 }
 
-reg_data=reg_data%>%
-  mutate(is_Funded = ifelse(Research.Chairs.Grant.Funding!="",1,0))
-
-reg_data = reg_data %>% select(contains("is_"))
-```
-**Table : Regression Model Result Summary**
-```{r, echo=FALSE, eval=TRUE}
-# Logistic regression model
-
-regression = glm(is_Funded ~., family = binomial, data = reg_data)
-summary (regression)
-
-reg_result = data.frame(coefficient = coef(regression), 
-                        odd = ceiling(exp(coef(regression)) * 10^2)/10^2)
-
-reg_result = reg_result %>% arrange(desc(coefficient))
 
 ```
+Based off our t-test, we get a "Networks and Security" mean of 8.001923 and an "Autonomy and AI" mean of 6.806818. Since the averages are distant, we can expect a large t- statistic and a small p value. 
 
-**Table : Regression Model Coefficient**
-```{r, echo=FALSE, eval=TRUE}
-kable(reg_result)
-```
-
-A substantial proportions of the variables int he model exhibit high **p-value** of greater than 5% suggesting that most of the research fields are not statistically significant predictors of whether a research project will be funded. This is likely due to the limited number of observations available int he data set, which may have constrained the model's ability to detect more nuanced relationships. Nevertheless, the model provides valuable insights into general trends in funding allocation by the Canadian government and major investors.
-
-Despite the high **p-value** for many variables, certain research fields stood out interns of their impact on the funding probabilities. Specifically, **Forming and Joining**, **Alternative Fuels**, and **Internal Combustion Engines** demonstrated relatively high log-odds ratios. These fields exhibited 4 to 5 times higher odds of receiving funding than those in other areas. In addition, **is_Forming.and.Joining** and **is_Alternative.Fuels** variables were both statistically significant with p-values of approximately 4% and 10% respectively which further support the findings above.
-
-The significance and high odd of **Forming and Joining** research fields aligns with ongoing research efforts to improve manufacturing process which are crucial for the production of commercial vehicles. While the corresponding number for **Alternative Fuels** underscores the importance of environmentally sustainable technologies, which are increasingly emphasized in both governmental policy and industry innovation.
-
-**2) Cross validation**
-
-To further evaluate the robustness of the logistic regression model, we conducted a k-fold cross-validation with four folds.
-
-The results are as follow:
-```{r, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
-
-k = 4
-
-reg_validation = reg_data %>% mutate(group_ind = sample(c(1:k), size=nrow(reg_data),
-                                                  replace = T))
-
-c.index = vector()
-
-for (i in 1:k){
-  reg_data.train = reg_validation %>% filter(group_ind != i)
-  reg_data.test = reg_validation %>% filter(group_ind == i)
-  logit.mod = glm(is_Funded ~ ., family = binomial, data = reg_data.train)
-  pi_hat = predict(logit.mod, newdata=reg_data.test, type="response")
-  m.roc=roc(reg_data.test$is_Funded ~ pi_hat)
-  c.index[i] = auc(m.roc)
-}
-cat("AUC score:",c.index )
-
-cat("Average AUC score:", mean(c.index))
-```
-
-The model predictive performance assessed using the AUC score. The resulting average AUC score was 0.609, which suggests a fair to somewhat weak performance. This moderate performance is likely attributed to the large number of non-significant variables in the model, reflecting the challenges posed by limited data. Nevertheless, the model remains useful for identifying general funding trends rather than providing highly accurate predictions for individual research projects. It serves its purpose of illustrating that dominant research areas that are attracting funding, which is the primary objective of the analysis.
-
-# V. Summary
-
-In conclusion...
-
-The logistic regression analysis provides valuable insights into the research funding landscape within the Canadian automotive sector. The significant fields of **Forming and Joining** and **Alternative Fuels**, along with the notable importance of **Internal Combustion Engines**, underscore the ongoing focus on traditional automotive manufacturing processes and sustainable technologies. These finding aligns with the broader trends observed in the automotive industry, where there is increasing attention to environmentally friend alternatives to conventional fuels and more efficient manufacturing practices.
-
-However, as the market of Autonomous Vehicles and Electric Vehicles grows, we believe that more resources should be reallocate to support researches in these emerging areas. Fields such as **Autonomy and AI**, **Batteries and Fuel Cells**, and **Hybrid and Electric Vehicles** are expected to play a pivotal role in shaping the future of automotive industry.
-# Appendix
-
+We observe a t statistic value of 33.42531 and a extremely small p value 3.359765e-195  (p < 0.05), rejecting the null hypothesis and observing "Networks and Security" is significantly higher than the other tags. We conclude that "Networks and Security" always wins in comparison to other research tags.
