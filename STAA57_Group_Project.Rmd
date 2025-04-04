@@ -1,6 +1,6 @@
 ---
 title: "**\\Huge STAA57 Group Project**"
-subtitle: "**\\Large What are the dominant research areas in Ontario's automotive sector, and how do institutions specialize in different fields**"
+subtitle: "**\\Large What Are The Dominant Research Areas in Ontario's Automotive Sector & How do Institutions Specialize In Different Fields**"
 author:  "Minh Tran - 1006804914, Swajeet Jadhav - 1009888276, Rayaan Syed - 1010231081"
 date: "2025-03-15"
 output: pdf_document
@@ -31,19 +31,19 @@ researchers = read.csv("ontarioautoresearchers.csv")
 
 ## 1.1. Research Goal
 
-With the growing popularity of electric vehicles (EVs) and the rapid advancements in artificial intelligence (AI), particularly in the development of autonomous vehicles like Tesla, it is crucial for automotive research facilities in Ontario to focus their efforts and resources on the right areas. This will ensure a significant contribution to the academia world while assisting the government in implementing effective policies and educational institutions better educate, prepare the next generation of labors.
+With the growing popularity of electric vehicles (EVs) and the rapid advancements in Artificial Intelligence (AI), automotive research facilities in Ontario must focus their efforts and resources on the right areas. This will ensure a significant contribution to the academic world while assisting the government in implementing effective policies and educational institutions to better educate, prepare the next generation of laborers.
 
-This report aims to examine the automotive research categories prioritized by Ontario's research facilities and identify specialized facilities in trending fields. It will also explore which areas are attracting the most funding from the Canadian government and major funds. Specifically this study seeks to address the following questions:
+This report aims to examine the automotive research categories prioritized by Ontario's research facilities and identify specialized facilities in trending fields. It will also explore which areas are attracting the most funding from the Canadian government and major funds. Specifically, this study seeks to address the following questions:
 
 1.  What is the leading research category in the automotive industry based on the number of researchers?
 2.  Which institutions are aligning with research trends by employing a significant number of researchers in the top three leading research categories?
-3.  Which primary research categories are attracting the most funding
+3.  Which primary research categories are attracting the most funding?
 
 ## 1.2. Dataset description
 
 ### Data source
 
-Our data set was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018. Each entry record a researcher's information regarding their working place and the research areas of expertise. A supporting table providing better descriptions of the research tags will be provided in the Appendix.
+Our data set was collected by researchers from the Ministry of Economic Development, Job Creation and Trade, and was published on the Government of Ontario's public database in 2018. Each entry records a researcher's information regarding their workplace and the research areas of expertise. A supporting table providing specific descriptions of the research tags will be provided in the Appendix.
 
 Here are the variables in the data set:
 
@@ -51,12 +51,12 @@ Here are the variables in the data set:
 names(researchers)[1:10]
 ```
 
-Some of the most important variable that will mainly be used in this reports are
+Some of the most important variables that will mainly be used in this report are
 
-1.  Institution: Name of the researcher institution
+1.  Institution: Name of the researcher's institution
 2.  Researcher.Name: Researcher name
 3.  Research.Areas: Researcher general research area
-4.  Researcher.Chairs.Grant.Funding: Name of the funding if that researcher have one
+4.  Researcher.Chairs.Grant.Funding: Name of the funding if that researcher has one
 5.  Tag. 1 \~ 5: Categorization of researchers research areas
 
 ### Data clean up
@@ -94,7 +94,7 @@ research_count = bind_rows(research_count, total_row)
 kable(research_count, caption = "Summary statistics of research areas")
 ```
 
-The table above presents a summary statistic of research areas, indicating the number of researchers engaged in each category (Count) and their relative proportions ("Frequency"). The results reveal that **Networks and Security**, **Autonomy and AI**, and **Transportation and Charging** are the most prominent fields, attracting the highest portion of researchers at 17%, 14% and 12% respectively.
+The table above presents a summary statistic of research areas, indicating the number of researchers engaged in each category (Count) and their relative proportions ("Frequency"). The results reveal that **Networks and Security**, **Autonomy and AI**, and **Transportation and Charging** are the most prominent fields, attracting the highest portion of researchers at 17%, 14%, and 12%, respectively.
 
 Please note that one researcher could engage in researches from multiple areas. Therefore, the counting number might contains duplicates and the **Total** row is no the sum of all research field but the total number of researchers in the data set.
 
@@ -124,7 +124,7 @@ top_institutions = research_summary %>%
 kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[3]))
 ```
 
-Carleton University has a significance number of researchers across three leading research fields at 37, 23 and 13 accordingly. Followed closely are University of Toronto, University of Waterloo and Ryerson University (now Toronto Metropolitan University). This trend aligns with the fact that these institutions are large, metropolitan universities, particularly in cities such as Toronto and Ottawa, which have established reputations for excellence in technological research. Given their substantial resources and expertise, these universities play a crucial role in shaping Canada's research priorities and should be central to discussions on nation's research agenda
+Carleton University has a significant number of researchers across three leading research fields at 37, 23, and 13, accordingly. Followed closely are the University of Toronto, University of Waterloo, and Ryerson University (now Toronto Metropolitan University). This trend aligns with the fact that these institutions are large, metropolitan universities, particularly in cities such as Toronto and Ottawa, which have established reputations for excellence in technological research. Given their substantial resources and expertise, these universities play a crucial role in shaping Canada's research priorities and should be central to discussions on the nation's research agenda
 
 ## **2.2. Graph & Visualizations**
 
@@ -138,7 +138,7 @@ Carleton University has a significance number of researchers across three leadin
        x = "Institution", y = "Count")
 ```
 
-The graph presents a visual representation of total number of researchers employed by each institutions. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry at 136, 85 and 66 respecitively. Notably while Carleton University leads in term of researchers specializing in key fields, University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policy makers and investors, enabaling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
+The graph presents a visual representation of the total number of researchers employed by each institution. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as the University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry at 136, 85, and 66, respectively. Notably, while Carleton University leads in terms of researchers specializing in key fields, the University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policymakers and investors, enabling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
 
 ```{r, echo=FALSE, eval=TRUE}
 fields = c("Networks and security", "Autonomy and AI", "Transportation and charging",
@@ -168,7 +168,7 @@ ggplot(df, aes(x = "", y = frequencies, fill = fields)) +
 ```
 
 Each segment of the graph represents the portion of researchers engaged in a specific field, based on data aggregated from multiple institutions. Given the number of research categories, the visualization focuses on the five fields with the highest concentration of researchers, while grouping the remaining fields under the category "Other". The data reveal that the top five research fields account for more than 50% of researchers in the data set showing the dominance of the top 5 group compared to the remaining 23 fields. 
-Another key points from this visualization is that research results from all five fields mostly support the development of Autonomous Electrical vehicles such as Tesla.This is likely due to the rising trend of Artificial Intelligence and replacing fossil fuel vehicles with sustainable, environmentally friendly transportation.
+Another key point from this visualization is that research results from all five fields mostly support the development of Autonomous Electrical vehicles such as Tesla.This is likely due to the rising trend of Artificial Intelligence and replacing fossil fuel vehicles with sustainable, environmentally friendly transportation.
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE, message=FALSE}
 reseach_field_num = researchers %>% rowwise() %>%
@@ -183,7 +183,7 @@ reseach_field_num = researchers %>% rowwise() %>%
        x = "Number of research field", y = "% of researcher")
 ```
 
-This diagram illustrates the distribution of researchers based on the number of research fields they are associated with, as indicated by the "Tag" columns. If a researcher has a value in only one "Tag" column, they are considered to be specialized in a single field. Similarly, researchers with values in multiple columns are associated with multiple fields. The chart results indicate that the majority of researchers in the data set specialize in only one or two research fields as these two categories collectively account for more than 60% of the total researcher population.These findings could serve as a valuable resource for universities and educators, enabling them to tailor their efforts toward training researchers with specialized or generalized expertise according to the needs of the industry. 
+This diagram illustrates the distribution of researchers based on the number of research fields they are associated with, as indicated by the "Tag" columns. If a researcher has a value in only one "Tag" column, they are considered to be specialized in a single field. Similarly, researchers with values in multiple columns are associated with multiple fields. The chart results indicate that the majority of researchers in the data set specialize in only one or two research fields, as these two categories collectively account for more than 60% of the total researcher population. These findings could serve as a valuable resource for universities and educators, enabling them to tailor their efforts toward training researchers with specialized or generalized expertise according to the needs of the industry. 
 
 
 \pagebreak
@@ -246,7 +246,7 @@ ggplot(average_percentage_df, aes(x = reorder(Research_Area, Mean_Percentage), y
 
 ## **3.2. Confidence Intervals**
 
-The bootstrapping procedure involved re-sampling the data set 1000 times. In each iteration, the proportion of researchers associated with each research area was calculated relative to the total number of researcher in the original data set. The average researcher percentage for each research field was then computed across all iterations and visualized above. The resulting bar chart illustrates that **Networks and Security** and **Autonomy and AI** exhibit the highest average representation across the simulations.
+The bootstrapping procedure involved re-sampling the data set 1000 times. In each iteration, the proportion of researchers associated with each research area was calculated relative to the total number of researchers in the original data set. The average researcher percentage for each research field was then computed across all iterations and visualized above. The resulting bar chart illustrates that **Networks and Security** and **Autonomy and AI** exhibit the highest average representation across the simulations.
 
 To quantify the variability and reliability of these estimates, we computed 95% confidence intervals (CIs) for each research area's average researcher percentage, as shown below. 
 
@@ -319,15 +319,15 @@ if (t_test_result$p.value < 0.05) {
 }
 ```
 
-The bootstrapped mean percentages were 20.8% for **Networks and Security** and 17.7% for **Autonomy and AI**. The resulting t-statistic 33.34 with p-value of 2.06e-194 indicates that there is less than 1% chance that we will observe a sample where the average percentage of researchers engage in **Networks and Security** is less than that of **Autonomy and AI** or something more extreme assuming that is true for the entire population. Therefore, we could safely reject the null hypothesis and confirming that the portion of researchers involves in researches in **Networks and Security** is significantly higher than other research areas.    
+The bootstrapped mean percentages were 20.8% for **Networks and Security** and 17.7% for **Autonomy and AI**. The resulting t-statistic 33.34 with a p-value of 2.06e-194 indicates that there is less than a 1% chance that we will observe a sample where the average percentage of researchers engaging in **Networks and Security** is less than that of **Autonomy and AI** or something more extreme assuming that is true for the entire population. Therefore, we could safely reject the null hypothesis and confirm that the portion of researchers involved in research in **Networks and Security** is significantly higher than other research areas.    
 
 # 4. Predictive modeling (Regression)
 
 ## **4.1. Logistic Regression Model**
 
-The allocation of research funding plays a pivotal role in identifying key research fields that attract the attention of funding bodies such as Canada Research Chair Program and other major investors. These funding trend are essential indicators of the areas prioritized by the Canadian government and industry stakeholders in the automotive sector.
+The allocation of research funding plays a pivotal role in identifying key research fields that attract the attention of funding bodies such as Canada Research Chair Program and other major investors. These funding trends are essential indicators of the areas prioritized by the Canadian government and industry stakeholders in the automotive sector.
 
-To analyze the factors influencing research funding, we employed a logistic regression model with the primary dependent variable being **is_Funded**. This variable take a value of 1 if the research has secured funding from the Canada Research Chair program or other similar grants, and 0 otherwise. As each researcher could be involved in one or multiple research field, combining all research field in the model will create too many variables for the scope of this research. Therefore, the independent variables for our model will focus on the various researcher's primary fields as categorized in **Tag.1** column of the data set.
+To analyze the factors influencing research funding, we employed a logistic regression model with the primary dependent variable being **is_Funded**. This variable takes a value of 1 if the research has secured funding from the Canada Research Chair program or other similar grants, and 0 otherwise. As each researcher could be involved in one or multiple research fields, combining all research fields in the model will create too many variables for the scope of this research. Therefore, the independent variables for our model will focus on the various researchers' primary fields as categorized in **Tag.1** column of the data set.
 
 ## **4.2. Result and Key Findings**
 ```{r, include=FALSE}
@@ -369,7 +369,7 @@ kable(reg_result, caption = "Top 5 Independent variable with highest
 
 A substantial proportions of the variables in the model exhibit high **p-value** of greater than 5% suggesting that most of the research fields are not statistically significant predictors of whether a research project will be funded. This is likely due to the limited number of observations available int he data set. Nevertheless, the model provides valuable insights into general trends in funding allocation by the Canadian government and major investors.
 
-Furthermore, certain research fields still stood out in terms of their impact on the funding probabilities. Specifically, **Forming and Joining**, **Alternative Fuels**, and **Internal Combustion Engines** demonstrated relatively high log-odds ratios. These fields exhibited 4 to 5 times higher odds of receiving funding than those in other areas. In addition, **is_Forming.and.Joining** and **is_Alternative.Fuels** variables were both statistically significant with p-values of approximately 4% and 10% respectively which further support the findings above.
+Furthermore, certain research fields still stood out in terms of their impact on funding probabilities. Specifically, **Forming and Joining**, **Alternative Fuels**, and **Internal Combustion Engines** demonstrated relatively high log-odds ratios. These fields exhibited 4 to 5 times higher odds of receiving funding than those in other areas. In addition, **is_Forming.and.Joining** and **is_Alternative.Fuels** variables were both statistically significant with p-values of approximately 4% and 10%, respectively which further support the findings above.
 
 The significance and high odd of **Forming and Joining** research fields aligns with ongoing research efforts to improve manufacturing process which are crucial for the production of commercial vehicles. While the corresponding number for **Alternative Fuels** underscores the importance of environmentally sustainable technologies, which are increasingly emphasized in both governmental policy and industry innovation.
 
