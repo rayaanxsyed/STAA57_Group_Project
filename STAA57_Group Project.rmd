@@ -212,7 +212,7 @@ ggplot(ci_table, aes(x = reorder(Research_Area, Mean_Percentage), y = Mean_Perce
 ```
 By taking confidence intervals for each research tag, we gain data regarding the ranges of each tag within the 1000 trials. While "Networks and Security" leads the dataset by inspection, the CI interval overlaps with "Autonomy and AI". It is necessary to verify if in any of the 1000 trials if "Networks and Security" loses even once to "Autonomy and AI" to conclude it always leads in our dataset. 
 
-Let's examine how "Networks and Security" performs when compared to the 2nd highest tag (Autonomy and AI) in the bootstrapped data to see if it leads in the hypothesis test. Let's choose the hypothesis test to include an H0 where "Networks and Security" always leads, giving significant difference compared to other tags. H1 is represented by "Autonomy and AI" winning even once, leading to no significant difference of "Networks and Security" in the dataset. 
+Let's examine how "Networks and Security" performs when compared to the 2nd highest tag (Autonomy and AI) in the bootstrapped data to see if it leads in the hypothesis test. Let's choose H0: Avg Percentage of Researchers work in Networks and Security < Avg Percentage of Researchers work in Autonomy and AI. H1: Avg Percentage of Researchers work in Networks and Security >= Avg Percentage of Researchers work in Autonomy and AI
 ```{r, echo= FALSE}
 # 2nd-ranked tag
 second_place_tag = average_percentage_df$Research_Area[2]
