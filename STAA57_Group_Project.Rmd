@@ -70,7 +70,7 @@ researchers = researchers %>% filter(!Institution %in% c("Brock University", "La
 
 # 2. Data Overview Analysis
 
-## 2.1. **Descriptive Statistic**
+## **2.1. Descriptive Statistic**
 
 ```{r, echo=FALSE, eval=TRUE}
 research_summary = researchers %>% 
@@ -126,7 +126,7 @@ kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$
 
 Carleton University has a significance number of researchers across three leading research fields at 37, 23 and 13 accordingly. Followed closely are University of Toronto, University of Waterloo and Ryerson University (now Toronto Metropolitan University). This trend aligns with the fact that these institutions are large, metropolitan universities, particularly in cities such as Toronto and Ottawa, which have established reputations for excellence in technological research. Given their substantial resources and expertise, these universities play a crucial role in shaping Canada's research priorities and should be central to discussions on nation's research agenda
 
-## 2.2. **Graph & Visualizations**
+## **2.2. Graph & Visualizations**
 
 ```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
@@ -191,7 +191,7 @@ This diagram illustrates the distribution of researchers based on the number of 
 
 # 3. Statistical Analysis
 
-## 3.1. Bootstrapping
+## **3.1. Bootstrapping**
 
 To determine whether the most prominent research area demonstrates a statistically significant lead over others, we employ a bootstrapping approach. Specifically, we aim to assess whether the observed dominance of **Networks and Security** holds consistently across repeated samples and whether this trend is statistically meaningful when compared to the second mot represented field. 
 
@@ -244,7 +244,7 @@ ggplot(average_percentage_df, aes(x = reorder(Research_Area, Mean_Percentage), y
         axis.text.x = element_text(size = 10))  # Reduce x-axis text size
 ```
 
-## 3.2. Confidence Intervals
+## **3.2. Confidence Intervals**
 
 The bootstrapping procedure involved re-sampling the data set 1000 times. In each iteration, the proportion of researchers associated with each research area was calculated relative to the total number of researcher in the original data set. The average researcher percentage for each research field was then computed across all iterations and visualized above. The resulting bar chart illustrates that **Networks and Security** and **Autonomy and AI** exhibit the highest average representation across the simulations.
 
@@ -277,14 +277,14 @@ ggplot(ci_table, aes(x = reorder(Research_Area, Mean_Percentage), y = Mean_Perce
 ```
 Although **Networks and Security** has the highest mean proportion, the CI for Autonomy and AI partially overlaps with it, suggesting that a direct comparison is is required to confirm whether this difference is statistically significant.
 
-## 3.3. Hypothesis testing
+## **3.3. Hypothesis testing**
 
 To formally test the hypothesis that **Networks and Security** leads over **Autonomy and AI**, we perform an independent one-sided t-test comparing their bootstrapped distributions. 
 The hypotheses are defined as follows:
 
-**Null Hypothesis ($H0$): $\mu_{\text{NetworkSecurity}} \leq \mu_{\text{AutonomyAI}}$
+**Null Hypothesis ($H_0$): $\mu_{\text{NetworkSecurity}} \leq \mu_{\text{AutonomyAI}}$**
 
-**Alternative Hypothesis ($H1$): $\mu_{\text{NetworkSecurity}} > \mu_{\text{AutonomyAI}}$
+**Alternative Hypothesis ($H_1$): $\mu_{\text{NetworkSecurity}} > \mu_{\text{AutonomyAI}}$**
 
 ```{r, echo= FALSE}
 # 2nd-ranked tag
@@ -323,13 +323,13 @@ The bootstrapped mean percentages were 20.8% for **Networks and Security** and 1
 
 # 4. Predictive modeling (Regression)
 
-## 4.1. Logistic Regression Model**
+## **4.1. Logistic Regression Model**
 
 The allocation of research funding plays a pivotal role in identifying key research fields that attract the attention of funding bodies such as Canada Research Chair Program and other major investors. These funding trend are essential indicators of the areas prioritized by the Canadian government and industry stakeholders in the automotive sector.
 
 To analyze the factors influencing research funding, we employed a logistic regression model with the primary dependent variable being **is_Funded**. This variable take a value of 1 if the research has secured funding from the Canada Research Chair program or other similar grants, and 0 otherwise. As each researcher could be involved in one or multiple research field, combining all research field in the model will create too many variables for the scope of this research. Therefore, the independent variables for our model will focus on the various researcher's primary fields as categorized in **Tag.1** column of the data set.
 
-## 4.2. Result and Key Findings**
+## **4.2. Result and Key Findings**
 ```{r, include=FALSE}
 reg_data = na.omit(researchers)
 #This code chunk dynamically create a dummy variable for all research field columns 
@@ -373,7 +373,7 @@ Furthermore, certain research fields still stood out in terms of their impact on
 
 The significance and high odd of **Forming and Joining** research fields aligns with ongoing research efforts to improve manufacturing process which are crucial for the production of commercial vehicles. While the corresponding number for **Alternative Fuels** underscores the importance of environmentally sustainable technologies, which are increasingly emphasized in both governmental policy and industry innovation.
 
-## 4.3. Cross validation**
+## **4.3. Cross validation**
 
 To further evaluate the robustness of the logistic regression model, we conducted a k-fold cross-validation with four folds.
 
