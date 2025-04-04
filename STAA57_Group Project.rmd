@@ -29,44 +29,42 @@ researcher_tags = read_excel("ontarioautoresearcherstags.xls")
 
 \pagebreak
 
-# I. Introduction
+# 1. Introduction
 
-## Research Goal
+## 1.1. Research Goal
 
-With the growing popularity of electric vehicles (EVs) and the rapid advancements in artificial intelligence (AI), particularly in the development of autonomous vehicles like Tesla, it is crucial for automotive research facilities in Ontario to focus their efforts and resources on the right areas. This will ensure a significant contribution to the academia world while assisting the government in implementing effective policies and educational institutions better educate, prepare the next generation of labors. 
+With the growing popularity of electric vehicles (EVs) and the rapid advancements in artificial intelligence (AI), particularly in the development of autonomous vehicles like Tesla, it is crucial for automotive research facilities in Ontario to focus their efforts and resources on the right areas. This will ensure a significant contribution to the academia world while assisting the government in implementing effective policies and educational institutions better educate, prepare the next generation of labors.
 
-This report aims to examine the automotive research areas prioritizing by Ontario's research facilities and identify specialized facilities in trending fields. It will also explore which areas are attracting the most researchers and which institutions are specializing in particular research domains.
+This report aims to examine the automotive research categories prioritized by Ontario's research facilities and identify specialized facilities in trending fields. It will also explore which areas are attracting the most funding from the Canadian government and major funds. Specifically this study seeks to address the following questions:
 
-## Dataset description
+1.  What is the leading research category in the automotive industry based on the number of researchers?
+2.  Which institutions are aligning with research trends by employing a significant number of researchers in the top three leading research categories?
+3.  Which primary research categories are attracting the most funding
+
+## 1.2. Dataset description
 
 ### Data source
 
-Our data set was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018. A supporting description table of the research tag will be provided in the Appendix for better understanding of the main data set values. 
+Our data set was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018. Each entry record a researcher's information regarding their working place and the research areas of expertise. A supporting table providing better descriptions of the research tags will be provided in the Appendix.
 
 **Data set Variables**
+1.  Institution: Name of the researcher institution
+2.  Researcher.Name: Researcher name
+3.  Research.Areas: Researcher general research area
+4.  Researcher.Chairs.Grant.Funding: Name of the funding if that researcher have one
+5.  Tag. 1 \~ 5: Categorization of researchers research areas
+6.  Remaining columns: Research categories. If a researchers is part of a category they will have an x in that column.
 
-```{r, echo=FALSE, eval=TRUE}
-glimpse(researchers)
-```
+### Data clean up
 
-Based on a summary of the data set, the `Noise..Viration.and.Harshness` variable was corrupted during the process of uploading or collecting the data and therefore will not be used in our report
+Based on the data set summary, our team identified that the 'Noise..Vibration.and.Harshness\` variable was corrupted during data collection or uploading. As a result, it will not be included in our report. Additionally, we observed that Brock University, Lakehead University, Royal Military College, and Laurentian University each had fewer than two researchers, suggesting incomplete data collection for these institutions. Therefore, researcher entries from these institutions will also be excluded.
 
 ```{r, include = FALSE}
 # Remove variable with errors
-researchers = researchers %>% select(!Noise..Vibration.and.Harshness )
+researchers = researchers %>% select(!Noise..Vibration.and.Harshness)
+
+researchers <- researchers %>% filter(!Institution %in% c("Brock University", "Lakehead University", "Laurentian University", "Royal Military College"))
 ```
-
-Some of the main categorical variables that can help categorizing the data include
-
-- **Researcher.Name**: Names of the researchers.
-
-- **Institution**: Name of university or research center that the researcher works at
-
-- **Research.Areas**: Researcher general field of research
-
-- **Tag**: Researcher's specialized field of research
-
-In addition, the data set also contains research fields as variable (e.g. Alternative Fuels, Autonomy and AI, Vehicle Design) to indicate whether or not a researcher work fall into that field of research
 
 # 2. Data Overview Analysis (**Swajeet**)
 
@@ -82,6 +80,7 @@ research_summary = researchers %>%
     names_to="Tag_Number",
     values_to = "Research_Area") %>%
   filter(!is.na(Research_Area) & Research_Area != "")
+
 
 research_count = research_summary %>%
   group_by(Research_Area) %>%
@@ -135,6 +134,7 @@ Carleton University has a significance number of researchers across three leadin
   labs(title = "Researcher Distribution Across Institutions",
        x = "Institution", y = "Count")
 ```
+
 The graph presents a visual representation of total number of researchers employed by each institutions. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry. Notably while Carleton University leads in term of researchers specializing in key fields, University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policy makers and investors, enabaling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
 
 
@@ -178,6 +178,7 @@ reseach_field_num = researchers %>% rowwise() %>%
    geom_histogram(fill = "steelblue", size = 10) +
    labs(title = "Distribution of Researchers By Number of Research Field",
        x = "Number of research field", y = "% of researcher")
+
 
 ```
 This diagram illustrates the distribution of researchers based on the number of research fields they are associated with, as indicated by the "Tag" columns. If a researcher has a value in only one "Tag" column, they are considered to be specialized in a single field. Similarly, researchers with values in multiple columns are associated with multiple fields. The chart results indicate that the majority of researchers in the data set specialize in only one or two research fields as these two categories collectively account for more than 60% of the total researcher population.These findings could serve as a valuable resource for universities and educators, enabling them to tailor their efforts toward training researchers with specialized or generalized expertise according to the needs of the industry.
@@ -348,6 +349,7 @@ The allocation of research funding plays a pivotal role in identifying key resea
 To analyze the factors influencing research funding, we employed a logistic regression model with the primary dependent variable being **is_Funded**. This variable take a value of 1 if the research has secured funding from the Canada Research Chair program or other similar grants, and 0 otherwise. The independent variables include various research's primary fields as categorized in **Tag.1** column of the data set.
 
 *1.2. Result and Key Findings*
+
 ```{r, include=FALSE}
 reg_data = na.omit(researchers)
 #This code chunk dynamically create a dummy variable for all research field columns 
@@ -367,7 +369,9 @@ reg_data=reg_data%>%
 
 reg_data = reg_data %>% select(contains("is_"))
 ```
+
 **Table : Regression Model Result Summary**
+
 ```{r, echo=FALSE, eval=TRUE}
 # Logistic regression model
 
@@ -382,6 +386,7 @@ reg_result = reg_result %>% arrange(desc(coefficient))
 ```
 
 **Table : Regression Model Coefficient**
+
 ```{r, echo=FALSE, eval=TRUE}
 kable(reg_result)
 ```
@@ -397,6 +402,7 @@ The significance and high odd of **Forming and Joining** research fields aligns 
 To further evaluate the robustness of the logistic regression model, we conducted a k-fold cross-validation with four folds.
 
 The results are as follow:
+
 ```{r, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 
 k = 4
@@ -427,6 +433,4 @@ In conclusion...
 
 The logistic regression analysis provides valuable insights into the research funding landscape within the Canadian automotive sector. The significant fields of **Forming and Joining** and **Alternative Fuels**, along with the notable importance of **Internal Combustion Engines**, underscore the ongoing focus on traditional automotive manufacturing processes and sustainable technologies. These finding aligns with the broader trends observed in the automotive industry, where there is increasing attention to environmentally friend alternatives to conventional fuels and more efficient manufacturing practices.
 
-However, as the market of Autonomous Vehicles and Electric Vehicles grows, we believe that more resources should be reallocate to support researches in these emerging areas. Fields such as **Autonomy and AI**, **Batteries and Fuel Cells**, and **Hybrid and Electric Vehicles** are expected to play a pivotal role in shaping the future of automotive industry.
-# Appendix
-
+However, as the market of Autonomous Vehicles and Electric Vehicles grows, we believe that more resources should be reallocate to support researches in these emerging areas. Fields such as **Autonomy and AI**, **Batteries and Fuel Cells**, and **Hybrid and Electric Vehicles** are expected to play a pivotal role in shaping the future of automotive industry. \# Appendix
