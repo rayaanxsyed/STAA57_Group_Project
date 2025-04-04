@@ -4,12 +4,11 @@ subtitle: "**\\Large What are the dominant research areas in Ontario's automotiv
 author: "Minh Tran - 1006804914, Swajeet Jadhav - 1009888276"
 university: "University of Toronto - Scarborough"
 date: "2025-03-15"
-output: pdf_document
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ```{r, include = FALSE}
 # Insert all library required here
@@ -48,14 +47,7 @@ This report aims to examine the automotive research categories prioritized by On
 
 Our data set was collected by researchers from the Ministry of Economic Development, Job creation and Trade and was published on the Government of Ontario's public database in 2018. Each entry record a researcher's information regarding their working place and the research areas of expertise. A supporting table providing better descriptions of the research tags will be provided in the Appendix.
 
-Here are the variables in the data set:
-
-```{r, echo=FALSE, eval=TRUE}
-names(researchers)
-```
-
-Some of the most important variable that will mainly be used in this reports are
-
+**Data set Variables**
 1.  Institution: Name of the researcher institution
 2.  Researcher.Name: Researcher name
 3.  Research.Areas: Researcher general research area
@@ -74,78 +66,277 @@ researchers = researchers %>% select(!Noise..Vibration.and.Harshness)
 researchers <- researchers %>% filter(!Institution %in% c("Brock University", "Lakehead University", "Laurentian University", "Royal Military College"))
 ```
 
-# II. Data Overview Analysis (**Swaaa**)
+# 2. Data Overview Analysis (**Swajeet**)
 
-## *Descriptive Statistic*
+## 2.1. **Descriptive Statistic**
 
--   Table 2: Summary statistics of research areas (count, frequency)
+## Tables
 
-    -   Identify the most common research fields
+```{r, echo=FALSE, eval=TRUE}
 
-    ```{r}
-    research_count = researchers %>% group_by(Tag.1) %>%
-      summarise(Count = n()) %>%
-      mutate(Frequency = Count / sum(Count)) %>%
-      arrange(desc(Count))
-    top_research_field = research_count$Tag.1[1]
-    kable(research_count, caption = "Summary statistics of research areas")
-    ```
+research_summary = researchers %>% 
+  pivot_longer(
+    cols = starts_with("Tag."),
+    names_to="Tag_Number",
+    values_to = "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "")
 
--   Table 3: Top 5 institutions with the most researchers in the top research field
 
-    -   Identify the most dominant institution in a field
+research_count = research_summary %>%
+  group_by(Research_Area) %>%
+  summarise(Count = n()) %>%
+  mutate(Frequency = Count / sum(Count)) %>%
+  arrange(desc(Count))
 
-    ```{r}
-    top_institutions = researchers %>%
-      filter(Tag.1 == top_research_field) %>%
-      count(Institution, sort = TRUE)%>%
-      rename(Reseacher_count = n)%>% head(5)
-    kable(top_institutions, caption = paste("Top 5 Institutions in", top_research_field))
-    ```
+kable(research_count, caption = "Summary statistics of research areas")
+```
 
-    ## *Graph & Visualizations*
+The table above presents a summary statistic of research areas, indicating the number of researchers engaged in each category (Count) and their relative proportions ("Frequency"). The results reveal that **Networks and Security**, **Autonomy and AI**, and **Transportation and Charging** are the most prominent fields, attracting the highest number of researchers
 
--   Bar chart: Research distribution across institution
+To further example institutional alignment with these research trends, the data set will be analyzed to identify the top five institutions employing the largest number of researchers in each of the three leading fields identified above.
 
-```{r}
+
+```{r, echo=FALSE, eval=TRUE}
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[1]) %>%
+  count(Institution, sort = TRUE)%>%
+  rename(Reseacher_count = n)%>% head(5)
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[1]))
+```
+
+
+```{r, echo=FALSE, eval=TRUE}
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[2]) %>%
+  count(Institution, sort = TRUE)%>%
+  rename(Reseacher_count = n)%>% head(5)
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[2]))
+```
+
+
+```{r, echo=FALSE, eval=TRUE}
+top_institutions = research_summary %>%
+  filter(Research_Area == research_count$Research_Area[3]) %>%
+  count(Institution, sort = TRUE)%>%
+  rename(Reseacher_count = n)%>% head(5)
+kable(top_institutions, caption = paste("Top 5 Institutions in", research_count$Research_Area[3]))
+```
+Carleton University has a significance number of researchers across three leading research fields, followed closely by the University of Toronto, University of Waterloo and Ryerson University (now Toronto Metropolitan University). This trend aligns with the fact that these institutions are large, metropolitan universities, particularly in cities such as Toronto and Ottawa, which have established reputations for excellence in technological research. Given their substantial resources and expertise, these universities play a crucial role in shaping Canada's research priorities and should be central to discussions on nation's research agenda
+
+## 2.2. **Graph & Visualizations**
+
+
+```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   coord_flip() +
   theme_minimal() +
-  labs(title = "Research Distribution Across Institutions",
+  labs(title = "Researcher Distribution Across Institutions",
        x = "Institution", y = "Count")
 ```
 
--   Pie chart: Proportion of of different research fields
+The graph presents a visual representation of total number of researchers employed by each institutions. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry. Notably while Carleton University leads in term of researchers specializing in key fields, University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policy makers and investors, enabaling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
 
-```{r}
- ggplot(research_count, aes(x = "", y = Count, fill = Tag.1)) +
-  geom_bar(stat = "identity", width = 1) +  geom_col(color = "black") +
-  coord_polar("y", start = 0) +
+
+```{r, echo=FALSE, eval=TRUE}
+fields = c("Networks and security", "Autonomy and AI", "Transportation and charging",
+            "Industrial processes", "Software", "Other")
+
+NWS_portion = research_count$Frequency[research_count$Research_Area=="Networks and security"]
+AA_portion = research_count$Frequency[research_count$Research_Area=="Autonomy and AI"]
+TC_portion = research_count$Frequency[research_count$Research_Area=="Transportation and charging"]
+IP_poriton = research_count$Frequency[research_count$Research_Area=="Industrial processes"]
+Soft_portion = research_count$Frequency[research_count$Research_Area=="Software"]
+Other_porition = 1 - sum(NWS_portion,AA_portion, TC_portion, IP_poriton, Soft_portion)
+
+frequencies = c(NWS_portion,AA_portion,TC_portion,IP_poriton,Soft_portion,Other_porition)
+
+# Create a data frame
+df = data.frame(fields, frequencies)
+
+# Create the pie chart
+ggplot(df, aes(x = "", y = frequencies, fill = fields)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
   theme_void() +
-  labs(title = "Proportion of 
-  Research Fields")
+  labs(title = "Proportion of Research Fields") +
+  scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f")) + 
+  geom_text(aes(label = paste0(round(frequencies*100, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 3)
 ```
 
--   History, frequency of research tag
+Each segment of the graph represents the portion of researchers engaged in a specific field, based on data aggregated from multiple institutions. Given the number of research categories, the visualization focuses on the five fields with the highest concentration of researchers, while grouping the remaining fields under the category "Other". The data reveal that although the top five fields account for the majority of researcher, the differences among them is not significant. Furthermore as we can see that the Other group still maintain the significant portion of researchers indicating that fields in the top 5 group are not distinct from fields in the Other group by a significant gap.
 
-```{r}
- ggplot(researchers, aes(x = Tag.1)) +
-  geom_bar(fill = "blue", color = "black") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(title = "Frequency of Research Tags", x = "Research Field", y = "count")
+```{r, echo=FALSE, eval=TRUE, warning=FALSE, message=FALSE}
+reseach_field_num = researchers %>% rowwise() %>%
+  mutate(field_num = 
+           sum(across(starts_with("Tag."), ~ .x != "" & !is.na(.x))))%>%
+  ungroup()
+ 
+ ggplot(reseach_field_num, aes(x=field_num,
+                                y = (..count.. / sum(..count..))*100)) + 
+   geom_histogram(fill = "steelblue", size = 10) +
+   labs(title = "Distribution of Researchers By Number of Research Field",
+       x = "Number of research field", y = "% of researcher")
+
 
 ```
+This diagram illustrates the distribution of researchers based on the number of research fields they are associated with, as indicated by the "Tag" columns. If a researcher has a value in only one "Tag" column, they are considered to be specialized in a single field. Similarly, researchers with values in multiple columns are associated with multiple fields. The chart results indicate that the majority of researchers in the data set specialize in only one or two research fields as these two categories collectively account for more than 60% of the total researcher population.These findings could serve as a valuable resource for universities and educators, enabling them to tailor their efforts toward training researchers with specialized or generalized expertise according to the needs of the industry.
+\pagebreak
 
 # III. Statistical Analysis (**rayaanxsyed**)
 
+```{r, echo=FALSE, eval=TRUE}
+research_summary2 = researchers %>%
+  pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to =
+                 "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "") %>%
+  count(Institution, Research_Area, sort = TRUE) %>%  
+  pivot_wider(names_from = Research_Area, values_from = n, values_fill = 0)  
+```
+
 We could pick an area we think that will be most trending (AI for example) and test to see if that is true
 
--   Confidence interval for the average number of researcher
+- Confidence interval for the average number of researcher of all data set institutions
+```{r, echo=FALSE, eval=TRUE}
+institution_counts = researchers %>%
+  count(Institution) %>%
+  pull(n)  # Extract only the counts
 
--   Hypothesis Testing
+# Perform t-test to get confidence interval
+t_test_result = t.test(institution_counts, conf.level = 0.95)
 
--   Bootstrapping
+# Display confidence interval
+t_test_result$conf.int
+```
+
+
+-  Let's choose the most trending research topic (Network and security) and do a confidence interval for the average number of researchers in the field.
+```{r, echo=FALSE, eval=TRUE}
+network_security_count = research_summary2$`Networks and security`
+# Perform t-test to get confidence interval
+t_test_result = t.test(network_security_count, conf.level = 0.95)
+# Display confidence interval
+t_test_result$conf.int
+
+```
+
+Hypothesis Testing
+For the topic (Network and security) and do a hypothesis test for the topic.
+```{r, echo=FALSE, eval=TRUE}
+network_security_count = research_summary2$`Networks and security`
+# Perform hypothesis test (H0: mean = 5)
+t_test_result = t.test(network_security_count, mu = 5, alternative = "two.sided")
+
+# Display test result
+print(t_test_result)
+```
+Let's pick our highest leading tag and see how it performs in bootstrapped data. We want to observe how it does compared to other tags and if it's the leading tag in all the samples by takign an average. 
+
+```{r, echo=FALSE, eval=TRUE}
+# Bootstrapping 
+
+set.seed(50)
+research_summary3 = researchers %>%
+  pivot_longer(cols = starts_with("Tag."), names_to = "Tag_Number", values_to = "Research_Area") %>%
+  filter(!is.na(Research_Area) & Research_Area != "")  # Sanity Check
+
+num_samples = 1000  # Number of bootstrap samples
+
+bootstrap_results = replicate(num_samples, { # Replicate 1000 times
+  sampled_data = research_summary3 %>% sample_n(n(), replace = TRUE)
+  total_researchers = nrow(sampled_data)
+
+  sampled_data %>%
+    group_by(Research_Area) %>%
+    summarise(Percentage = n() / total_researchers * 100)  # Percentage of each tag
+}, simplify = FALSE)
+
+boot_results_df = bind_rows(bootstrap_results, .id = "Iteration") 
+
+average_percentage_df = boot_results_df %>%
+  group_by(Research_Area) %>%
+  summarise(Mean_Percentage = mean(Percentage)) %>%
+  arrange(desc(Mean_Percentage))  # Sort by average percentage in descending order for readability
+
+# Plot the horizontal graph
+ggplot(average_percentage_df, aes(x = reorder(Research_Area, Mean_Percentage), y = Mean_Percentage)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  coord_flip() +  # Flip to make it horizontal
+  labs(title = "Average Percentage of Researchers in Each Tag",
+       x = "Research Area", y = "Average Percentage (%)") +
+  theme_minimal()
+```
+In this graph, the data of the institutions and their tags have been replicated 1000 times. We take the average percentage to see how they perform over the 1000 trials and gain a graph of each tags performance. 
+
+
+```{r, echo=FALSE, eval=TRUE}
+# Confidence Interval for "Networks and security"
+network_security_percentage = boot_results_df %>%
+  filter(Research_Area == "Networks and security") %>% pull(Percentage)
+
+# 95% confidence interval
+lower_ci = quantile(network_security_percentage, 0.025)
+upper_ci = quantile(network_security_percentage, 0.975)
+
+cat("95% Confidence Interval for Network and Security: [", lower_ci, ", ", upper_ci, "]\n")
+
+```
+By taking a confidence interval for Network and Security, we observe that the true percentage of researchers in Network and Security lies in the interval [ 6.468531, 9.702797 ]. This is a very high value when comparing this to the other tags in our horizontal bar chart. 
+
+Let's examine how Networks and Security performs when compared to the 2nd highest tag (Autonomy and AI) in our bootstrapped data to see if it always leads the data by a hypothesis test.
+
+
+```{r, echo=FALSE, eval=TRUE}
+
+# 2nd-ranked tag
+second_place_tag = average_percentage_df$Research_Area[2]
+
+# Prepare data for paired comparison
+paired_data = boot_results_df %>%
+  filter(Research_Area %in% c("Networks and security", second_place_tag)) %>%
+  pivot_wider(names_from = Research_Area, values_from = Percentage)
+
+# Paired t-test (one-sided: Networks and Security > 2nd place)
+t_test_result = t.test(
+  paired_data$`Networks and security`,
+  paired_data[[second_place_tag]],
+  paired = TRUE,
+  alternative = "greater"  # Tests if Networks and Security > 2nd place
+)
+
+cat("Paired t-test: Networks and Security vs.", second_place_tag, "\n")
+cat("Mean % Network and Security:", mean(paired_data$`Networks and security`), "\n")
+cat("Mean % (", second_place_tag, "):", mean(paired_data[[second_place_tag]]), "\n")
+cat("T-statistic:", t_test_result$statistic, "\n")
+cat("P-value:", t_test_result$p.value, "\n")
+
+if (t_test_result$p.value < 0.05) {
+  cat("Reject H₀. Networks and Security is significantly higher than the other tags. (p < 0.05).")
+} else {
+  cat("No significant difference (p ≥ 0.05).")
+}
+```
+Based off our paired t-test, we get a average Network Security score of 8.001923 and a average Autonomy and AI score of 6.806818. Since the averages are distant, we can expect a large t statistic and a small p value. 
+
+We observe a t statistic value of 31.29503 and a extremely small p value 1.070572e-150 (p < 0.05), rejecting the null hypothesis and observing Networks and Security is significantly higher than the other tags.
+
+- Bootstrapping is a re sampling technique used to estimate statistics on a dataset by repeatedly sampling with replacement. It helps assess the variability of an estimator (e.g., mean, standard deviation) and construct confidence intervals without relying on strong parametric assumptions. Do bootstrapping on network and security.  
+```{r, echo=FALSE, eval=TRUE}
+# Bootstrapping function
+boot_function = function() {
+  boot_data = sample(network_security_count, size =
+                       length(network_security_count), replace = TRUE)
+  return(mean(boot_data, na.rm = TRUE))
+}
+# Compute 95% Confidence Interval using Bootstrapping (1000 replications)
+boot_CI =quantile(replicate(1000, boot_function()), c(0.025, 0.975))
+# Print results
+print(boot_CI)
+# Now lets compare with t-test confidence interval
+t.test(network_security_count)
+
+```
 
 # IV. Predictive modeling (Regression) (**Minh**)
 
