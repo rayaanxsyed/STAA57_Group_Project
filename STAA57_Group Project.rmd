@@ -74,7 +74,6 @@ In addition, the data set also contains research fields as variable (e.g. Altern
 
 ## Tables
 
-## An initial Summary table of all research areas.
 ```{r, echo=FALSE, eval=TRUE}
 
 research_summary = researchers %>% 
@@ -127,7 +126,6 @@ Carleton University has a significance number of researchers across three leadin
 
 ## 2.2. **Graph & Visualizations**
 
-## 2.2.1 An informative Bar chart on Researchers Distribution
 
 ```{r, echo=FALSE, eval=TRUE}
  ggplot(researchers %>% count(Institution, sort = TRUE), aes(x = reorder(Institution, n), y = n)) +
@@ -138,8 +136,6 @@ Carleton University has a significance number of researchers across three leadin
        x = "Institution", y = "Count")
 ```
 The graph presents a visual representation of total number of researchers employed by each institutions. The findings reinforce our conclusions drawn in Section 2.1, confirming that leading institutions such as University of Waterloo, Carleton University, University of Toronto continue to have the highest number of researchers engaged with the automotive industry. Notably while Carleton University leads in term of researchers specializing in key fields, University of Waterloo has the largest number of researchers overall. This data may serve as a valuable resource for policy makers and investors, enabaling them to strategically allocate support to institutions that have the potential to contribute significantly to automotive research.
-
-## 2.2.2 An interesting Pie Chart on Research Fields 
 
 
 ```{r, echo=FALSE, eval=TRUE}
@@ -170,8 +166,6 @@ ggplot(df, aes(x = "", y = frequencies, fill = fields)) +
 ```
 
 Each segment of the graph represents the portion of researchers engaged in a specific field, based on data aggregated from multiple institutions. Given the number of research categories, the visualization focuses on the five fields with the highest concentration of researchers, while grouping the remaining fields under the category "Other". The data reveal that although the top five fields account for the majority of researcher, the differences among them is not significant. Furthermore as we can see that the Other group still maintain the significant portion of researchers indicating that fields in the top 5 group are not distinct from fields in the Other group by a significant gap.
-
-## 2.2.3 Histogram of Research Variance by Tags.
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE, message=FALSE}
 reseach_field_num = researchers %>% rowwise() %>%
